@@ -1,0 +1,52 @@
+.ichnite-highlight {
+    background-color: yellow;
+    cursor: pointer;
+}
+
+#ichnite-toolbar {
+    position: absolute;
+    z-index: 999999;
+
+    background: white;
+
+    border: 1px solid gray;
+
+    border-radius: 5px;
+
+    padding: 5px 10px;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#ichnite-memo-popup {
+
+    position: absolute;
+
+    z-index: 999999;
+
+    background: white;
+
+    border: 1px solid gray;
+
+    border-radius: 8px;
+
+    padding: 8px;
+
+    min-width: 150px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.2);
+
+}
+
+#ichnite-memo-popup button {
+
+    margin-top: 5px;
+
+    margin-right: 5px;
+
+    cursor: pointer;
+
+}
