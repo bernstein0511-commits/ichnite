@@ -28,6 +28,7 @@
         "modules/popup.js",
         "modules/restore.js",
         "modules/marker.js",
+        "modules/panel.js",
         "content/content.js"
       ],
 
