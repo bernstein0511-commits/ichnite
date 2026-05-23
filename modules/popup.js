@@ -131,6 +131,12 @@ function showMemoPopup(
       ) {
         target.dataset.memo =
           newMemo;
+
+          updateMarker(
+            target.textContent,
+            memo,
+            newMemo
+          );
       }
     };
 

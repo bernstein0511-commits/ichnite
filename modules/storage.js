@@ -26,8 +26,55 @@ function saveMarker(
       );
     }
   );
-
 }
+
+
+function updateMarker(
+  text,
+  oldMemo,
+  newMemo
+) {
+
+  const url =
+    window.location.href;
+
+  chrome.storage.local.get(
+    ["markers"],
+    (result) => {
+
+      let markers =
+        result.markers || [];
+
+      markers =
+        markers.map(
+          marker => {
+
+            if (
+              marker.url === url &&
+              marker.text === text &&
+              marker.memo === oldMemo
+            ) {
+
+              return {
+                ...marker,
+                memo: newMemo
+              };
+            }
+            return marker;
+          }
+        );
+
+      chrome.storage.local.set({
+        markers: markers
+      });
+
+      console.log(
+        "更新成功"
+      );
+    }
+  );
+}
+
 
 function deleteMarker(
   text,
