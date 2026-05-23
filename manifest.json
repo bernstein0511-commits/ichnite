@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ichnite",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "読解の足跡を残すマーカーツール",
 
   "permissions": [
@@ -14,14 +14,26 @@
   ],
 
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "ui/popup.html"
   },
 
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"]
+      "matches": [
+        "<all_urls>"
+      ],
+
+      "js": [
+        "modules/storage.js",
+        "modules/popup.js",
+        "modules/restore.js",
+        "modules/marker.js",
+        "content/content.js"
+      ],
+
+      "css": [
+        "content/content.css"
+      ]
     }
   ]
 }
