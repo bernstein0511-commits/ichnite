@@ -1,2 +1,2 @@
-"# ichnite" 
+"# ichnite"
 "sobueブランチ確認"
