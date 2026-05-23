@@ -1,2 +1,2 @@
 "# ichnite" 
-"sobue kouki"
+"sobueブランチ確認"
