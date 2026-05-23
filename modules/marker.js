@@ -1,7 +1,9 @@
+// 選択テキストを保持
 let currentSelection =
   null;
 
-
+// テキスト選択時の処理
+// ↓マウスを離したとき
 document.addEventListener(
   "mouseup",
   (event) => {
@@ -52,7 +54,7 @@ function showToolbar(x, y) {
     "ichnite-toolbar";
 
   toolbar.innerText =
-    "🖍 マーカー";
+    "マーカー";
 
   toolbar.style.left =
     `${x}px`;
