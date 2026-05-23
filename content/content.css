@@ -60,5 +60,35 @@
 
 #ichnite-side-panel.minimized {
     width: 40px;
+    min-width: 40px;
     overflow: hidden;
+}
+
+#ichnite-mini-button {
+    display: none;
+}
+
+/* minimized時に隠す */
+#ichnite-side-panel.minimized
+#ichnite-panel-header {
+    display: none;
+}
+#ichnite-side-panel.minimized
+#ichnite-panel-content {
+    display: none;
+}
+
+/* ☰表示 */
+#ichnite-side-panel.minimized
+#ichnite-mini-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: 20px;
+}
+#ichnite-mini-button {
+    display: none;
 }

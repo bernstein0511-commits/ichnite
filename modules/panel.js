@@ -22,43 +22,65 @@ function createSidePanel() {
 
         <div id="ichnite-panel-header">
 
-            <span>Ichnite</span>
+      <span id="ichnite-title">
+        Ichnite
+      </span>
 
-            <button id="togglePanel">
-                ×
-            </button>
+      <button id="togglePanel">
+        ×
+      </button>
 
-        </div>
+    </div>
 
-        <div id="ichnite-panel-content">
+    <div id="ichnite-panel-content">
 
-            <h3>辞書</h3>
+      <h3>辞書</h3>
 
-            <p>
-                今後ここに
-                機能追加
-            </p>
+      <p>
+        今後ここに
+        機能追加
+      </p>
 
-        </div>
+    </div>
 
-    `;
+    <div id="ichnite-mini-button">
+      ☰
+    </div>
+
+  `;
 
   document.body.appendChild(
     panel
   );
 
   // 最小化
-  document
-    .getElementById(
+  const toggleButton =
+    document.getElementById(
       "togglePanel"
-    )
-    .onclick = () => {
+    );
 
-      panel.classList.toggle(
-        "minimized"
-      );
+  const miniButton =
+    document.getElementById(
+      "ichnite-mini-button"
+    );
 
-    };
+  // 最小化
+  toggleButton.onclick = () => {
+
+    panel.classList.add(
+      "minimized"
+    );
+
+  };
+
+  // 再展開
+  miniButton.onclick = () => {
+
+    panel.classList.remove(
+      "minimized"
+    );
+
+  };
 
 }
 
