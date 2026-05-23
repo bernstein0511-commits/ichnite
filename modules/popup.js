@@ -18,7 +18,6 @@ document.addEventListener(
       );
 
     }
-
   }
 );
 
@@ -50,11 +49,8 @@ document.addEventListener(
       !isPopup &&
       !isHighlight
     ) {
-
       removeMemoPopup();
-
     }
-
   }
 );
 
@@ -100,14 +96,14 @@ function showMemoPopup(
         <button id="editMemo">
 
             ${hasMemo
-      ? "✏ 編集"
-      : "📝 注釈を追加"
+      ? "編集"
+      : "注釈を追加"
     }
 
         </button>
 
         <button id="deleteMemo">
-            🗑 削除
+            削除
         </button>
 
     `;
@@ -122,7 +118,6 @@ function showMemoPopup(
       "editMemo"
     )
     .onclick = () => {
-
       const newMemo =
         prompt(
           hasMemo
@@ -134,12 +129,9 @@ function showMemoPopup(
       if (
         newMemo !== null
       ) {
-
         target.dataset.memo =
           newMemo;
-
       }
-
     };
 
   document
@@ -147,25 +139,24 @@ function showMemoPopup(
       "deleteMemo"
     )
     .onclick = () => {
+      deleteMarker(
+        target.textContent,
+        target.dataset.memo
+      );
 
       const parent =
         target.parentNode;
-
       while (
         target.firstChild
       ) {
-
         parent.insertBefore(
           target.firstChild,
           target
         );
-
       }
 
       target.remove();
-
       removeMemoPopup();
-
     };
 }
 
@@ -178,7 +169,6 @@ function removeMemoPopup() {
     );
 
   if (popup) {
-
     popup.remove();
   }
 }
