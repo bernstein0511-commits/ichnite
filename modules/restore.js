@@ -21,6 +21,7 @@ function restoreMarkers() {
           marker =>
             marker.url === url
         );
+        
 
       pageMarkers.forEach(
         marker => {
