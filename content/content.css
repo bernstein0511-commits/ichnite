@@ -1,7 +1,28 @@
 .ichnite-highlight {
-    background-color: yellow;
+    border-radius: 2px;
     cursor: pointer;
 }
+.yellow {
+    background:
+        rgba(255, 235, 59, 0.6);
+}
+.green {
+    background:
+        rgba(76, 175, 80, 0.4);
+}
+.blue {
+    background:
+        rgba(33, 150, 243, 0.3);
+}
+.red {
+    background:
+        rgba(244, 67, 54, 0.3);
+}
+.purple {
+    background:
+        rgba(156, 39, 176, 0.3);
+}
+
 
 #ichnite-toolbar {
     position: absolute;
@@ -68,19 +89,36 @@
     display: none;
 }
 
+#ichnite-floating-button {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    font-size: 24px;
+}
+
 /* minimized時に隠す */
-#ichnite-side-panel.minimized
-#ichnite-panel-header {
+#ichnite-side-panel.minimized #ichnite-panel-header {
     display: none;
 }
-#ichnite-side-panel.minimized
-#ichnite-panel-content {
+
+#ichnite-side-panel.minimized #ichnite-panel-content {
     display: none;
 }
 
 /* ☰表示 */
-#ichnite-side-panel.minimized
-#ichnite-mini-button {
+#ichnite-side-panel.minimized #ichnite-mini-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -89,6 +127,182 @@
     cursor: pointer;
     font-size: 20px;
 }
+
 #ichnite-mini-button {
     display: none;
+}
+
+
+#ichnite-side-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    width: 320px;
+    height: 80vh;
+
+    background: #fffdf8;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.15);
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 999999;
+}
+
+
+/* ヘッダー */
+#ichnite-panel-header {
+
+    height: 60px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 20px;
+
+    background:
+        linear-gradient(135deg,
+            #ffb347,
+            #ffcc70);
+
+    color: white;
+
+    font-size: 18px;
+    font-weight: bold;
+
+    user-select: none;
+}
+
+
+/* 閉じるボタン */
+#closePanel {
+
+    width: 36px;
+    height: 36px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255,
+            255,
+            255,
+            0.2);
+
+    color: white;
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+
+
+#closePanel:hover {
+
+    background: rgba(255,
+            255,
+            255,
+            0.35);
+
+    transform: scale(1.1);
+}
+
+
+/* コンテンツ部分 */
+#ichnite-panel-content {
+
+    flex: 1;
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+    color: #444;
+
+    line-height: 1.6;
+}
+
+
+/* 見出し */
+#ichnite-panel-content h3 {
+
+    margin-top: 0;
+
+    color: #ff9f1c;
+
+    font-size: 20px;
+
+    border-bottom:
+        2px solid #ffe0a3;
+
+    padding-bottom: 8px;
+}
+
+
+/* フローティングボタン */
+#ichnite-floating-button {
+
+    position: fixed;
+
+    right: 20px;
+    bottom: 30px;
+
+    width: 56px;
+    height: 56px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(135deg,
+            #ffb347,
+            #ff9f1c);
+
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 28px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    box-shadow:
+        0 6px 20px rgba(255,
+            159,
+            28,
+            0.35);
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+
+    z-index: 999999;
+}
+
+
+#ichnite-floating-button:hover {
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 10px 24px rgba(255,
+            159,
+            28,
+            0.45);
 }

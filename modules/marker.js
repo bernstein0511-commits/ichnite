@@ -46,31 +46,40 @@ document.addEventListener(
 function showToolbar(x, y) {
 
   const toolbar =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   toolbar.id =
     "ichnite-toolbar";
 
-  toolbar.innerText =
-    "マーカー";
+  toolbar.innerHTML = `
+      <button data-color="yellow">🟨</button>
+      <button data-color="green">🟩</button>
+      <button data-color="blue">🟦</button>
+      <button data-color="red">🟥</button>
+      <button data-color="purple">🟪</button>
+  `;
 
-  toolbar.style.left =
-    `${x}px`;
+  toolbar.style.left = `${x}px`;
 
-  toolbar.style.top =
-    `${y}px`;
+  toolbar.style.top = `${y}px`;
+  
+  document.body.appendChild(toolbar);
 
   toolbar.addEventListener(
     "mousedown",
     addMarker
   );
 
-  document.body
-    .appendChild(
-      toolbar
-    );
+  toolbar.querySelectorAll("button").forEach(button => {
+    button.onclick =
+      (event) => {
+        event.preventDefault();
+        selectedColor =
+          button.dataset.color;
+        addMarker(event);
+      };
+  });
+
 
 }
 
@@ -90,7 +99,8 @@ function addMarker(event) {
 
     saveMarker(
       selectedText,
-      ""
+      "",
+      selectedColor
     );
 
     const marker =
@@ -99,7 +109,7 @@ function addMarker(event) {
       );
 
     marker.className =
-      "ichnite-highlight";
+      `ichnite-highlight ${selectedColor}`;
 
     marker.dataset.memo =
       "";

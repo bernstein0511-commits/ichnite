@@ -1,6 +1,5 @@
 function createSidePanel() {
 
-  // 既に存在するなら作らない
   if (
     document.getElementById(
       "ichnite-side-panel"
@@ -8,7 +7,6 @@ function createSidePanel() {
   ) {
     return;
   }
-
   // パネル生成
   const panel =
     document.createElement(
@@ -20,13 +18,13 @@ function createSidePanel() {
 
   panel.innerHTML = `
 
-        <div id="ichnite-panel-header">
+    <div id="ichnite-panel-header">
 
-      <span id="ichnite-title">
+      <span>
         Ichnite
       </span>
 
-      <button id="togglePanel">
+      <button id="closePanel">
         ×
       </button>
 
@@ -37,14 +35,9 @@ function createSidePanel() {
       <h3>辞書</h3>
 
       <p>
-        今後ここに
-        機能追加
+        今後ここに機能追加
       </p>
 
-    </div>
-
-    <div id="ichnite-mini-button">
-      ☰
     </div>
 
   `;
@@ -53,38 +46,103 @@ function createSidePanel() {
     panel
   );
 
+
+  // フローティングボタン
+  const floatingButton =
+    document.createElement(
+      "div"
+    );
+
+  floatingButton.id =
+    "ichnite-floating-button";
+
+  floatingButton.innerHTML =
+    "☰";
+
+  document.body.appendChild(
+    floatingButton );
+
+
   // 最小化
-  const toggleButton =
-    document.getElementById(
-      "togglePanel"
-    );
+  document
+    .getElementById(
+      "closePanel"
+    )
+    .onclick = () => {
+      panel.style.display =
+        "none";
 
-  const miniButton =
-    document.getElementById(
-      "ichnite-mini-button"
-    );
+      floatingButton.style.display =
+        "flex";
+    };
 
-  // 最小化
-  toggleButton.onclick = () => {
-
-    panel.classList.add(
-      "minimized"
-    );
-
-  };
 
   // 再展開
-  miniButton.onclick = () => {
+  floatingButton.onclick =
+    () => {
 
-    panel.classList.remove(
-      "minimized"
-    );
+      panel.style.display =
+        "block";
 
-  };
+      floatingButton.style.display =
+        "none";
+
+    };
+
+
+  // 初期状態
+  panel.style.display =
+    "none";
+
+  floatingButton.style.display =
+    "flex";
+
+
+  // ドラッグ移動
+  let isDragging =
+    false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  floatingButton.addEventListener(
+    "mousedown",
+    (event) => {
+      isDragging = true;
+
+      offsetX =
+        event.clientX -
+        floatingButton.offsetLeft;
+
+      offsetY =
+        event.clientY -
+        floatingButton.offsetTop;
+    }
+  );
+
+
+  document.addEventListener(
+    "mousemove",
+    (event) => {
+      if (!isDragging) return;
+
+      floatingButton.style.left =
+        `${event.clientX - offsetX}px`;
+
+      floatingButton.style.top =
+        `${event.clientY - offsetY}px`;
+    }
+  );
+
+
+  document.addEventListener(
+    "mouseup",
+    () => {
+      isDragging = false;
+    }
+  );
 
 }
 
-// ページ読み込み時生成
 window.addEventListener(
   "load",
   createSidePanel

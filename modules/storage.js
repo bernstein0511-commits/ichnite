@@ -14,7 +14,8 @@ function saveMarker(
       markers.push({
         url: url,
         text: text,
-        memo: memo
+        memo: memo,
+        color: color
       });
 
       chrome.storage.local.set({

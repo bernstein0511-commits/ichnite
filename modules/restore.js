@@ -88,7 +88,7 @@ function highlightSavedText(
         );
 
       marker.className =
-        "ichnite-highlight";
+        `ichnite-highlight ${color}`;
 
       marker.dataset.memo =
         memo;
