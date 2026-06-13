@@ -24,11 +24,12 @@
       ],
 
       "js": [
+        "content/content.js",
         "modules/storage.js",
         "modules/popup.js",
         "modules/restore.js",
         "modules/marker.js",
-        "content/content.js"
+        "modules/panel.js"
       ],
 
       "css": [
