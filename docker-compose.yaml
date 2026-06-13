@@ -1,0 +1,9 @@
+version: '3'
+services:
+  demo-app:
+    build: .
+    volumes:
+      - .dockervenv:/src/.venv
+      - .:/src
+    ports:
+      - 8300:8300  # ホストマシンのポート8300を、docker内のポート8300に接続する
