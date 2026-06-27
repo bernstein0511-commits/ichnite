@@ -60,7 +60,7 @@ function createSidePanel() {
     "☰";
 
   document.body.appendChild(
-    floatingButton );
+    floatingButton);
 
 
   // 最小化
@@ -77,37 +77,25 @@ function createSidePanel() {
     };
 
 
-  // 再展開
-  floatingButton.onclick =
-    () => {
-
-      panel.style.display =
-        "block";
-
-      floatingButton.style.display =
-        "none";
-
-    };
-
-
   // 初期状態
-  panel.style.display =
-    "none";
+  let isDragging = false;
+  let hasMoved = false;
 
-  floatingButton.style.display =
-    "flex";
+  let startX = 0;
+  let startY = 0;
 
-
-  // ドラッグ移動
-  let isDragging =
-    false;
   let offsetX = 0;
   let offsetY = 0;
 
   floatingButton.addEventListener(
     "mousedown",
     (event) => {
+
       isDragging = true;
+      hasMoved = false;
+
+      startX = event.clientX;
+      startY = event.clientY;
 
       offsetX =
         event.clientX -
@@ -119,25 +107,53 @@ function createSidePanel() {
     }
   );
 
-
   document.addEventListener(
     "mousemove",
     (event) => {
+
       if (!isDragging) return;
+
+      const dx =
+        event.clientX - startX;
+
+      const dy =
+        event.clientY - startY;
+
+      if (
+        Math.abs(dx) > 5 ||
+        Math.abs(dy) > 5
+      ) {
+        hasMoved = true;
+      }
 
       floatingButton.style.left =
         `${event.clientX - offsetX}px`;
 
       floatingButton.style.top =
         `${event.clientY - offsetY}px`;
+
     }
   );
-
 
   document.addEventListener(
     "mouseup",
     () => {
       isDragging = false;
+    }
+  );
+
+  // 再展開
+  floatingButton.addEventListener(
+    "click",
+    () => {
+
+      if (hasMoved) {
+        hasMoved = false;
+        return;
+      }
+
+      panel.style.display = "block";
+      floatingButton.style.display = "none";
     }
   );
 
