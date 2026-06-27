@@ -1,0 +1,41 @@
+services:
+  api:
+    build: .
+    container_name: ichnite-api
+
+    volumes:
+      - .:/src
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      mysql:
+        condition: service_healthy   # ← ここが重要
+
+  mysql:
+    image: mysql:8.0
+
+    container_name: ichnite-mysql
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ichnite
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    healthcheck:                                          # ← 追加
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_data:
