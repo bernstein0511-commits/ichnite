@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マーカー記録帳 - Ichnite</title>
+  <link rel="stylesheet" href="records.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <header id="page-header">
+      <div id="header-content">
+        <h1>マーカー記録帳</h1>
+        <p>マーカーの使い方・ページ数などを記録して、定期的に見直しましょう</p>
+      </div>
+      <div id="header-actions">
+        <div id="search-wrapper">
+          <input type="text" id="search-input" placeholder="検索...">
+        </div>
+        <button id="add-btn">＋ 追加</button>
+      </div>
+    </header>
+
+    <div id="filter-bar">
+      <div id="filter-tabs">
+        <button class="tab active" data-filter="all">全て</button>
+        <button class="tab" data-filter="category">カテゴリ</button>
+        <button class="tab" data-filter="date">日付</button>
+        <button class="tab" data-filter="importance">重要度</button>
+      </div>
+      <div id="category-select-wrapper" style="display:none;">
+        <select id="category-filter">
+          <option value="">すべてのカテゴリ</option>
+        </select>
+      </div>
+      <div id="importance-filter-wrapper" style="display:none;">
+        <select id="importance-filter">
+          <option value="">すべての重要度</option>
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★</option>
+          <option value="3">★★★</option>
+          <option value="2">★★</option>
+          <option value="1">★</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="cards-grid"></div>
+
+    <div id="empty-state" style="display:none;">
+      <div id="empty-icon">📝</div>
+      <p>記録がありません</p>
+      <p id="empty-sub">テキストを選択してマーカーを付けてみましょう</p>
+    </div>
+
+  </div>
+
+  <div id="modal-overlay" style="display:none;">
+    <div id="modal">
+      <div id="modal-header">
+        <h2 id="modal-title">記録を追加</h2>
+        <button id="modal-close">×</button>
+      </div>
+      <form id="marker-form">
+        <input type="hidden" id="edit-id">
+
+        <div class="form-group">
+          <label>カテゴリ</label>
+          <input type="text" id="form-category" placeholder="例：哲学、スタートアップ">
+        </div>
+
+        <div class="form-group">
+          <label>タイトル</label>
+          <input type="text" id="form-title" placeholder="タイトルを入力">
+        </div>
+
+        <div class="form-group">
+          <label>本文・ハイライト</label>
+          <textarea id="form-text" rows="4" placeholder="ハイライトしたテキスト"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>出典（本・著者）</label>
+          <input type="text" id="form-source" placeholder="例：田中太郎 著 / 書名">
+        </div>
+
+        <div class="form-group">
+          <label>メモ</label>
+          <textarea id="form-memo" rows="2" placeholder="メモを追加"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>重要度</label>
+          <div id="star-input">
+            <span class="star-btn" data-val="1">★</span>
+            <span class="star-btn" data-val="2">★</span>
+            <span class="star-btn" data-val="3">★</span>
+            <span class="star-btn" data-val="4">★</span>
+            <span class="star-btn" data-val="5">★</span>
+          </div>
+          <input type="hidden" id="form-importance" value="3">
+        </div>
+
+        <div id="form-actions">
+          <button type="button" id="cancel-btn">キャンセル</button>
+          <button type="submit" id="save-btn">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="records.js"></script>
+</body>
+</html>

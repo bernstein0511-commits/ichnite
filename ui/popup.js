@@ -1,7 +1,7 @@
 document
-    .getElementById("testBtn")
+    .getElementById("recordsBtn")
     .addEventListener("click", () => {
-
-        alert("Ichnite起動中");
-
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("ui/records.html")
+        });
     });

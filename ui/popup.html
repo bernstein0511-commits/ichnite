@@ -7,13 +7,20 @@
 </head>
 <body>
 
-    <h2>Ichnite</h2>
+    <div id="menu-header">
+        <span id="menu-icon">☰</span>
+        <span id="menu-title">Ichnite</span>
+    </div>
 
-    <p>拡張機能の起動に成功しました。</p>
+    <div id="menu-divider"></div>
 
-    <button id="testBtn">
-        起動確認
-    </button>
+    <ul id="menu-list">
+        <li class="menu-item" id="recordsBtn">
+            <span class="menu-item-icon">📔</span>
+            <span class="menu-item-label">マーカー記録帳</span>
+            <span class="menu-item-arrow">›</span>
+        </li>
+    </ul>
 
     <script src="popup.js"></script>
 
