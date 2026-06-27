@@ -1,16 +1,12 @@
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import declarative_base
 
-from config import settings
+import config
 
 DATABASE_URL = (
-    f"mysql+pymysql://"
-    f"{settings.DB_USER}:"
-    f"{settings.DB_PASSWORD}@"
-    f"{settings.DB_HOST}:"
-    f"{settings.DB_PORT}/"
-    f"{settings.DB_NAME}"
+    f"mysql+pymysql://{config.DB_USER}:{config.DB_PASSWORD}"
+    f"@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}?charset=utf8mb4"
 )
 
 engine = create_engine(
@@ -29,11 +25,8 @@ Base = declarative_base()
 
 
 def get_db():
-
     db = SessionLocal()
-
     try:
         yield db
-
     finally:
         db.close()
