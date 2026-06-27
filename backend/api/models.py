@@ -28,7 +28,7 @@ class Page(Base):
     )
 
     url = Column(
-        Text,
+        String(767),
         nullable=False,
         unique=True
     )
