@@ -136,6 +136,11 @@ class AiNote(Base):
     )
 
     explanation = Column(Text)
+    
+    similar_words = Column(Text) 
+
+    antonyms = Column(Text)
+
 
     translation = Column(Text)
 

@@ -68,6 +68,8 @@ def create_ai_note(db: Session, note: schemas.AiNoteCreate):
     db_note = models.AiNote(
         marker_id=note.marker_id,
         explanation=note.explanation,
+        similar_words=note.similar_words,
+        antonyms=note.antonyms,
         translation=note.translation,
         usage_example=note.usage_example,
         user_memo=note.user_memo,

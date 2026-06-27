@@ -47,6 +47,8 @@ class MarkerResponse(MarkerCreate):
 class AiNoteCreate(BaseModel):
     marker_id: int
     explanation: str
+    similar_words: str
+    antonyms: str
     translation: str
     usage_example: str
     user_memo: Optional[str] = None
@@ -76,3 +78,11 @@ class MarkerBookResponse(MarkerBookCreate):
 
     class Config:
         orm_mode = True
+        
+# ==========================
+# AI生成リクエスト（拡張機能から使う）
+# ==========================
+
+class AiGenerateRequest(BaseModel):
+    marker_id: int
+    selected_text: str

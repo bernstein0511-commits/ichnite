@@ -21,3 +21,11 @@ def read_markers(
     db: Session = Depends(get_db)
 ):
     return crud.get_markers(db)
+
+
+@router.delete("/{marker_id}")
+def delete_marker(
+    marker_id: int,
+    db: Session = Depends(get_db)
+):
+    return crud.delete_marker(db, marker_id)
