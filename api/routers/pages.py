@@ -1,24 +1,23 @@
-def create_page(db: Session, page: schemas.PageCreate):
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-    db_page = models.Page(
-        url=page.url,
-        title=page.title
-    )
+import crud
+import schemas
+from database import get_db
 
-    db.add(db_page)
-    db.commit()
-    db.refresh(db_page)
-
-    return db_page
+router = APIRouter()
 
 
-def get_pages(db: Session):
+@router.post("/", response_model=schemas.PageResponse)
+def create_page(
+    page: schemas.PageCreate,
+    db: Session = Depends(get_db)
+):
+    return crud.create_page(db, page)
 
-    return db.query(models.Page).all()
 
-
-def get_page(db: Session, page_id: int):
-
-    return db.query(models.Page).filter(
-        models.Page.page_id == page_id
-    ).first()
+@router.get("/", response_model=list[schemas.PageResponse])
+def read_pages(
+    db: Session = Depends(get_db)
+):
+    return crud.get_pages(db)

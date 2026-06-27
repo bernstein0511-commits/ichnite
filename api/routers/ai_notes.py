@@ -1,32 +1,24 @@
-def create_ai_note(db: Session, note: schemas.AiNoteCreate):
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-    db_note = models.AiNote(
+import crud
+import schemas
+from database import get_db
 
-        marker_id=note.marker_id,
-
-        explanation=note.explanation,
-
-        translation=note.translation,
-
-        usage_example=note.usage_example,
-
-        user_memo=note.user_memo
-
-    )
-
-    db.add(db_note)
-
-    db.commit()
-
-    db.refresh(db_note)
-
-    return db_note
+router = APIRouter()
 
 
-def get_ai_note(db: Session, marker_id: int):
+@router.post("/", response_model=schemas.AiNoteResponse)
+def create_ai_note(
+    note: schemas.AiNoteCreate,
+    db: Session = Depends(get_db)
+):
+    return crud.create_ai_note(db, note)
 
-    return db.query(models.AiNote).filter(
 
-        models.AiNote.marker_id == marker_id
-
-    ).first()
+@router.get("/{marker_id}", response_model=schemas.AiNoteResponse)
+def get_ai_note(
+    marker_id: int,
+    db: Session = Depends(get_db)
+):
+    return crud.get_ai_note(db, marker_id)

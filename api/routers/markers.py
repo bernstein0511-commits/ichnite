@@ -1,35 +1,23 @@
-def create_marker(db: Session, marker: schemas.MarkerCreate):
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-    db_marker = models.Marker(
+import crud
+import schemas
+from database import get_db
 
-        page_id=marker.page_id,
-
-        selected_text=marker.selected_text,
-
-        color=marker.color,
-
-        position_start=marker.position_start,
-
-        position_end=marker.position_end
-
-    )
-
-    db.add(db_marker)
-    db.commit()
-    db.refresh(db_marker)
-
-    return db_marker
+router = APIRouter()
 
 
-def get_markers(db: Session):
+@router.post("/", response_model=schemas.MarkerResponse)
+def create_marker(
+    marker: schemas.MarkerCreate,
+    db: Session = Depends(get_db)
+):
+    return crud.create_marker(db, marker)
 
-    return db.query(models.Marker).all()
 
-
-def get_marker(db: Session, marker_id: int):
-
-    return db.query(models.Marker).filter(
-
-        models.Marker.marker_id == marker_id
-
-    ).first()
+@router.get("/", response_model=list[schemas.MarkerResponse])
+def read_markers(
+    db: Session = Depends(get_db)
+):
+    return crud.get_markers(db)

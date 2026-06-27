@@ -1,22 +1,23 @@
-def create_marker_book(db: Session, book: schemas.MarkerBookCreate):
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-    db_book = models.MarkerBook(
+import crud
+import schemas
+from database import get_db
 
-        marker_id=book.marker_id,
-
-        memo=book.memo
-
-    )
-
-    db.add(db_book)
-
-    db.commit()
-
-    db.refresh(db_book)
-
-    return db_book
+router = APIRouter()
 
 
-def get_marker_books(db: Session):
+@router.post("/", response_model=schemas.MarkerBookResponse)
+def create_marker_book(
+    book: schemas.MarkerBookCreate,
+    db: Session = Depends(get_db)
+):
+    return crud.create_marker_book(db, book)
 
-    return db.query(models.MarkerBook).all()
+
+@router.get("/", response_model=list[schemas.MarkerBookResponse])
+def read_marker_book(
+    db: Session = Depends(get_db)
+):
+    return crud.get_marker_books(db)
