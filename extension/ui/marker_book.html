@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マーカー記録帳 - Ichnite</title>
+  <link rel="stylesheet" href="marker_book.css">
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>マーカー記録帳</h1>
+      <p>今までに付けた足跡（マーカー）とメモの一覧です。過去の内容を見返して、理解を深めましょう。</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-refresh">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        更新
+      </button>
+      <button class="btn" id="btn-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        検索
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar" id="status-bar" hidden></div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <select class="filter-select" id="filter-page">
+      <option value="">すべてのページ</option>
+    </select>
+    <select class="filter-select" id="filter-color">
+      <option value="">すべての色</option>
+    </select>
+    <select class="filter-select" id="filter-period">
+      <option value="">すべての期間</option>
+      <option value="7">直近7日</option>
+      <option value="30">直近30日</option>
+      <option value="90">直近90日</option>
+    </select>
+    <div class="filter-search">
+      <input type="text" id="filter-keyword" placeholder="キーワードで検索">
+      <span class="search-icon">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>言葉・フレーズ</th>
+          <th>解説・メモ</th>
+          <th>元のページ</th>
+          <th>記録日</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="marker-table-body">
+        <!-- Rows are injected by marker_book.js -->
+      </tbody>
+    </table>
+    <div class="loading-state" id="loading-state">
+      <p>読み込み中...</p>
+    </div>
+    <div class="empty-state" id="empty-state" hidden>
+      <p>該当する記録が見つかりませんでした。</p>
+    </div>
+    <div class="error-state" id="error-state" hidden>
+      <p>取得できませんでした。バックエンド（<code>http://localhost:8000</code>）が起動しているか確認してください。</p>
+      <button class="btn" id="btn-retry">再読み込み</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<script src="marker_book.js"></script>
+</body>
+</html>

@@ -384,3 +384,29 @@ body.ichnite-markers-hidden .ichnite-highlight {
             28,
             0.45);
 }
+
+/* パネルヘッダーの右側（記録帳ボタン＋閉じるボタン） */
+#ichnite-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 記録帳を開くボタン */
+#openMarkerBook {
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#openMarkerBook:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}

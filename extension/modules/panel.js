@@ -32,7 +32,10 @@ function createSidePanel() {
   panel.innerHTML = `
     <div id="ichnite-panel-header">
       <span>Ichnite 辞書</span>
-      <button id="closePanel">×</button>
+      <div id="ichnite-panel-header-actions">
+        <button id="openMarkerBook" title="マーカー記録帳を開く">記録帳</button>
+        <button id="closePanel">×</button>
+      </div>
     </div>
     <div id="ichnite-marker-toggle-row">
       <span>🖍️ マーカーを表示</span>
@@ -62,6 +65,10 @@ function createSidePanel() {
       markerToggleCheckbox.checked = changes.markersVisible.newValue;
     }
   });
+  // 記録帳ページを新しいタブで開く
+  document.getElementById("openMarkerBook").onclick = () => {
+    window.open(chrome.runtime.getURL("ui/marker_book.html"), "_blank");
+  };
 
   // フローティングボタン
   const floatingButton = document.createElement("div");

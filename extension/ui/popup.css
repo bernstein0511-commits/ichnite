@@ -1,5 +1,5 @@
 body {
-  width: 200px;
+  width: 220px;
   padding: 10px;
   font-family: sans-serif;
 }
@@ -7,6 +7,12 @@ body {
 button {
   width: 100%;
   padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .menu-item {
@@ -63,3 +69,13 @@ button {
   transform: translateX(16px);
 }
 
+button.primary {
+  background: #ff9f1c;
+  border-color: #ff9f1c;
+  color: white;
+  font-weight: bold;
+}
+
+button.primary:hover {
+  background: #f08c00;
+}
