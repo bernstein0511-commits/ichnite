@@ -39,7 +39,7 @@ def generate_ai_note(selected_text: str) -> dict:
         raw = response.choices[0].message.content
         result = json.loads(raw)
 
-        required_keys = ["explanation", "similar_words", "antonyms", "usage_example"]
+        required_keys = ["explanation", "similar_words", "antonyms", "translation", "usage_example"]
         for key in required_keys:
             if key not in result:
                 result[key] = ""

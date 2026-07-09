@@ -65,6 +65,13 @@ def delete_marker(db: Session, marker_id: int):
 # ==========================
 
 def create_ai_note(db: Session, note: schemas.AiNoteCreate):
+    existing = db.query(models.AiNote).filter(models.AiNote.marker_id == note.marker_id).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="AI note already exists for this marker. Use PUT /ai_notes/{marker_id} to regenerate."
+        )
+
     db_note = models.AiNote(
         marker_id=note.marker_id,
         explanation=note.explanation,
@@ -85,6 +92,23 @@ def get_ai_note(db: Session, marker_id: int):
     if not note:
         raise HTTPException(status_code=404, detail="AI Note not found")
     return note
+
+
+def update_ai_note(db: Session, marker_id: int, note: schemas.AiNoteCreate):
+    existing = db.query(models.AiNote).filter(models.AiNote.marker_id == marker_id).first()
+    if not existing:
+        raise HTTPException(status_code=404, detail="AI Note not found")
+
+    # AI生成項目のみ上書きし、user_memoはユーザー入力のため保持する
+    existing.explanation = note.explanation
+    existing.similar_words = note.similar_words
+    existing.antonyms = note.antonyms
+    existing.translation = note.translation
+    existing.usage_example = note.usage_example
+
+    db.commit()
+    db.refresh(existing)
+    return existing
 
 
 # ==========================

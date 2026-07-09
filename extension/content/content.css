@@ -23,6 +23,65 @@
         rgba(156, 39, 176, 0.3);
 }
 
+body.ichnite-markers-hidden .ichnite-highlight {
+    background: transparent !important;
+    cursor: inherit;
+    pointer-events: none;
+}
+
+#ichnite-marker-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    color: #444;
+    font-size: 14px;
+}
+
+#ichnite-marker-toggle-row .switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+#ichnite-marker-toggle-row .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+#ichnite-marker-toggle-row .switch .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+
+#ichnite-marker-toggle-row .switch .slider::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+#ichnite-marker-toggle-row .switch input:checked + .slider {
+    background-color: #ff9f1c;
+}
+
+#ichnite-marker-toggle-row .switch input:checked + .slider::before {
+    transform: translateX(16px);
+}
+
 
 #ichnite-toolbar {
     position: absolute;

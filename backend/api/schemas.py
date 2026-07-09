@@ -86,3 +86,7 @@ class MarkerBookResponse(MarkerBookCreate):
 class AiGenerateRequest(BaseModel):
     marker_id: int
     selected_text: str
+
+
+class AiRegenerateRequest(BaseModel):
+    selected_text: str

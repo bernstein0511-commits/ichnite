@@ -5,6 +5,7 @@ document.addEventListener("mouseup", (event) => {
   removeToolbar();
 
   if (!selectedText) return;
+  if (!ichniteMarkersVisible) return;
 
   try {
     currentSelection = selection.getRangeAt(0).cloneRange();

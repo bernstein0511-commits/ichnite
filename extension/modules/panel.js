@@ -13,6 +13,13 @@ function createSidePanel() {
       <span>Ichnite 辞書</span>
       <button id="closePanel">×</button>
     </div>
+    <div id="ichnite-marker-toggle-row">
+      <span>🖍️ マーカーを表示</span>
+      <label class="switch">
+        <input type="checkbox" id="ichniteMarkerToggleCheckbox">
+        <span class="slider"></span>
+      </label>
+    </div>
     <div id="ichnite-panel-content">
       <p id="ichnite-loading">読み込み中...</p>
       <ul id="ichnite-marker-list"></ul>
@@ -20,6 +27,20 @@ function createSidePanel() {
   `;
 
   document.body.appendChild(panel);
+
+  // マーカー表示トグル
+  const markerToggleCheckbox = document.getElementById("ichniteMarkerToggleCheckbox");
+  chrome.storage.local.get({ markersVisible: true }, (data) => {
+    markerToggleCheckbox.checked = data.markersVisible;
+  });
+  markerToggleCheckbox.addEventListener("change", () => {
+    chrome.storage.local.set({ markersVisible: markerToggleCheckbox.checked });
+  });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.markersVisible) {
+      markerToggleCheckbox.checked = changes.markersVisible.newValue;
+    }
+  });
 
   // フローティングボタン
   const floatingButton = document.createElement("div");
