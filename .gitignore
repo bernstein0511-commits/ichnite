@@ -1,0 +1,12 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# データベース（必要なら）
+*.db
