@@ -11,7 +11,10 @@ function createSidePanel() {
   panel.innerHTML = `
     <div id="ichnite-panel-header">
       <span>Ichnite 辞書</span>
-      <button id="closePanel">×</button>
+      <div id="ichnite-panel-header-actions">
+        <button id="openMarkerBook" title="マーカー記録帳を開く">記録帳</button>
+        <button id="closePanel">×</button>
+      </div>
     </div>
     <div id="ichnite-panel-content">
       <p id="ichnite-loading">読み込み中...</p>
@@ -20,6 +23,11 @@ function createSidePanel() {
   `;
 
   document.body.appendChild(panel);
+
+  // 記録帳ページを新しいタブで開く
+  document.getElementById("openMarkerBook").onclick = () => {
+    window.open(chrome.runtime.getURL("ui/marker_book.html"), "_blank");
+  };
 
   // フローティングボタン
   const floatingButton = document.createElement("div");

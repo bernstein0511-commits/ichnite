@@ -78,7 +78,35 @@ class MarkerBookResponse(MarkerBookCreate):
 
     class Config:
         orm_mode = True
-        
+
+
+class MarkerBookMemoUpdate(BaseModel):
+    memo: str
+
+
+# ==========================
+# 記録帳ページ用（Page + Marker + AiNote + MarkerBook を結合した1件分）
+# ==========================
+
+class MarkerBookEntryResponse(BaseModel):
+    marker_id: int
+    selected_text: str
+    color: str
+    created_at: datetime
+
+    page_id: int
+    page_url: str
+    page_title: Optional[str] = None
+
+    explanation: Optional[str] = None
+    similar_words: Optional[str] = None
+    antonyms: Optional[str] = None
+    usage_example: Optional[str] = None
+    translation: Optional[str] = None
+
+    memo: Optional[str] = None
+
+
 # ==========================
 # AI生成リクエスト（拡張機能から使う）
 # ==========================
