@@ -1,4 +1,22 @@
-window.addEventListener("load", restoreMarkers);
+window.addEventListener("load", async () => {
+  await restoreMarkers();
+  jumpToHashMarker();
+});
+
+
+function jumpToHashMarker() {
+  const match = location.hash.match(/^#ichnite-marker-(\d+)$/);
+  if (!match) return;
+
+  const targetEl = document.querySelector(
+    `.ichnite-highlight[data-marker-id="${match[1]}"]`
+  );
+  if (!targetEl) return;
+
+  targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  targetEl.classList.add("ichnite-jump-flash");
+  setTimeout(() => targetEl.classList.remove("ichnite-jump-flash"), 1200);
+}
 
 
 async function restoreMarkers() {

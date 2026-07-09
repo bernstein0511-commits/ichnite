@@ -35,6 +35,7 @@ class MarkerCreate(BaseModel):
 class MarkerResponse(MarkerCreate):
     marker_id: int
     created_at: datetime
+    page_url: Optional[str] = None
 
     class Config:
         orm_mode = True

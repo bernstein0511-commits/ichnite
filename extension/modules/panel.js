@@ -1,6 +1,27 @@
 window.addEventListener("load", createSidePanel);
 
 
+function escapeHtml(str) {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+
+function buildMarkerJumpUrl(pageUrl, markerId) {
+  if (!pageUrl) return null;
+  try {
+    const url = new URL(pageUrl);
+    url.hash = `ichnite-marker-${markerId}`;
+    return url.toString();
+  } catch (error) {
+    return null;
+  }
+}
+
+
 function createSidePanel() {
 
   if (document.getElementById("ichnite-side-panel")) return;
@@ -116,8 +137,14 @@ async function loadMarkerList() {
     markers.forEach(marker => {
       const li = document.createElement("li");
       li.className = "ichnite-dict-item";
+
+      const jumpUrl = buildMarkerJumpUrl(marker.page_url, marker.marker_id);
+      const wordHtml = jumpUrl
+        ? `<a class="ichnite-dict-link" href="${escapeHtml(jumpUrl)}" target="_blank" rel="noopener">${escapeHtml(marker.selected_text)} 🔗</a>`
+        : escapeHtml(marker.selected_text);
+
       li.innerHTML = `
-        <div class="ichnite-dict-word">${marker.selected_text}</div>
+        <div class="ichnite-dict-word">${wordHtml}</div>
         <div class="ichnite-dict-meta">🎨 ${marker.color} ・ 📅 ${new Date(marker.created_at).toLocaleDateString("ja-JP")}</div>
         <button class="ichnite-dict-delete" data-id="${marker.marker_id}">削除</button>
       `;

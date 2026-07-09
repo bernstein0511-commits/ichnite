@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 import models
@@ -48,7 +48,12 @@ def create_marker(db: Session, marker: schemas.MarkerCreate):
 
 
 def get_markers(db: Session):
-    return db.query(models.Marker).order_by(models.Marker.created_at.desc()).all()
+    return (
+        db.query(models.Marker)
+        .options(joinedload(models.Marker.page))
+        .order_by(models.Marker.created_at.desc())
+        .all()
+    )
 
 
 def delete_marker(db: Session, marker_id: int):
