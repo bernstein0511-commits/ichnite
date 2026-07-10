@@ -1,21 +1,60 @@
 {
   "manifest_version": 3,
   "name": "Ichnite",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "読解の足跡を残すマーカーツール",
 
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs"
   ],
 
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
   ],
 
-  "action": {
-    "default_popup": "ui/popup.html"
+  "background": {
+    "service_worker": "background.js"
   },
+
+  "icons": {
+    "16": "icons/icon_maincolor.png",
+    "32": "icons/icon_maincolor.png",
+    "48": "icons/icon_maincolor.png",
+    "128": "icons/icon_maincolor.png"
+  },
+
+  "action": {
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "icons/icon_maincolor.png",
+      "32": "icons/icon_maincolor.png",
+      "48": "icons/icon_maincolor.png",
+      "128": "icons/icon_maincolor.png"
+    }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "ui/marker_book.html",
+        "ui/marker_book.css",
+        "ui/marker_book.js",
+        "ui/marker_detail.html",
+        "ui/marker_detail.css",
+        "ui/marker_detail.js",
+        "content/panel-ui.css",
+        "icons/icon_white.png",
+        "icons/icon_maincolor.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
 
   "content_scripts": [
     {
@@ -25,7 +64,9 @@
 
       "js": [
         "content/content.js",
+        "modules/shadowHost.js",
         "modules/storage.js",
+        "modules/textLocator.js",
         "modules/popup.js",
         "modules/restore.js",
         "modules/marker.js",

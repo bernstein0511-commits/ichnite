@@ -1,0 +1,532 @@
+/* 拡張機能のUI（サイドパネル・ツールバー・メモポップアップ等）のスタイル。
+   Shadow DOM内に読み込まれ、閲覧中のページのCSSとは隔離される。
+   基調カラー：白 + #fbb61d */
+
+:host {
+    --ichnite-primary: #fbb61d;
+    --ichnite-primary-soft: rgba(251, 182, 29, 0.14);
+    --ichnite-primary-soft-hover: rgba(251, 182, 29, 0.24);
+    --ichnite-text: #333333;
+    --ichnite-text-muted: #8a8a8a;
+    --ichnite-border: #f1e4c4;
+}
+
+#ichnite-toolbar {
+    position: absolute;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 999px;
+    padding: 8px 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ichnite-color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 0;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px var(--ichnite-border);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.ichnite-color-swatch:hover {
+    transform: scale(1.15);
+}
+
+.ichnite-color-swatch[data-color="yellow"] { background: #f4c430; }
+.ichnite-color-swatch[data-color="green"]  { background: #4caf50; }
+.ichnite-color-swatch[data-color="blue"]   { background: #2196f3; }
+.ichnite-color-swatch[data-color="red"]    { background: #f44336; }
+.ichnite-color-swatch[data-color="purple"] { background: #9c27b0; }
+
+#ichnite-memo-popup {
+    position: absolute;
+    z-index: 999999;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 10px;
+    padding: 10px;
+    width: 240px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    color: var(--ichnite-text);
+    font-size: 13px;
+}
+
+#ichnite-memo-popup * {
+    box-sizing: border-box;
+}
+
+.ichnite-memo-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.ichnite-memo-empty {
+    color: var(--ichnite-text-muted);
+}
+
+#ichnite-memo-popup textarea {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ichnite-text);
+    resize: vertical;
+}
+
+#ichnite-memo-popup textarea:focus {
+    outline: none;
+    border-color: var(--ichnite-primary);
+}
+
+.ichnite-memo-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+#ichnite-memo-popup button {
+    border: none;
+    border-radius: 999px;
+    background: var(--ichnite-primary-soft);
+    color: var(--ichnite-text);
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#ichnite-memo-popup button:hover {
+    background: var(--ichnite-primary-soft-hover);
+}
+
+#ichnite-memo-popup button:disabled {
+    color: var(--ichnite-text-muted);
+    cursor: default;
+}
+
+#ichnite-memo-popup #saveMemo {
+    background: var(--ichnite-primary);
+    color: #ffffff;
+}
+
+#ichnite-memo-popup #saveMemo:hover {
+    background: #e5a417;
+}
+
+
+/* サイドパネル本体 */
+#ichnite-side-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    width: 320px;
+    height: 80vh;
+
+    background: #ffffff;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.15);
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 999999;
+
+    /* パネル上での意図しないテキスト選択を防ぐ */
+    user-select: none;
+}
+
+
+/* ヘッダー（タイトル行＋操作ボタン行の2段構成） */
+#ichnite-panel-header {
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 14px 16px 12px 20px;
+
+    background: var(--ichnite-primary);
+
+    color: #ffffff;
+}
+
+/* 1段目：タイトルと閉じるボタン */
+#ichnite-panel-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.ichnite-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#ichnite-panel-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* 2段目：マーカー表示／カラー選択／記録帳の操作ボタン */
+#ichnite-panel-header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+#toggleMarkers,
+#toggleToolbar {
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#toggleMarkers:hover,
+#toggleToolbar:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+#toggleMarkers.is-off,
+#toggleToolbar.is-off {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 記録帳ボタンだけ白背景にして、他の操作ボタンより目立たせる */
+#openMarkerBook {
+    border: none;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #b8790f;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#openMarkerBook:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+#closePanel {
+
+    width: 30px;
+    height: 30px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.2);
+
+    color: #ffffff;
+
+    font-size: 18px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+
+#closePanel:hover {
+
+    background: rgba(255, 255, 255, 0.35);
+
+    transform: scale(1.1);
+}
+
+
+/* コンテンツ部分 */
+#ichnite-panel-content {
+
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 16px 20px 20px;
+
+    overflow-y: auto;
+
+    color: var(--ichnite-text);
+
+    line-height: 1.6;
+}
+
+
+/* 絞り込みバー */
+#ichnite-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 12px;
+    font-size: 13px;
+    color: var(--ichnite-text-muted);
+}
+
+#ichnite-filter-bar input {
+    accent-color: var(--ichnite-primary);
+    cursor: pointer;
+}
+
+#ichnite-filter-bar label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+
+#ichnite-loading {
+    color: var(--ichnite-text-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 24px 0;
+}
+
+
+/* マーカー一覧 */
+#ichnite-marker-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ichnite-dict-item {
+    background: #ffffff;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ichnite-dict-word {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ichnite-text);
+    word-break: break-word;
+    cursor: pointer;
+}
+
+.ichnite-dict-word:hover {
+    color: var(--ichnite-primary);
+    text-decoration: underline;
+}
+
+.ichnite-dict-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ichnite-text-muted);
+}
+
+.ichnite-color-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.ichnite-color-dot.yellow { background: #f4c430; }
+.ichnite-color-dot.green  { background: #4caf50; }
+.ichnite-color-dot.blue   { background: #2196f3; }
+.ichnite-color-dot.red    { background: #f44336; }
+.ichnite-color-dot.purple { background: #9c27b0; }
+
+.ichnite-dict-memo {
+    font-size: 12.5px;
+    color: var(--ichnite-text);
+    background: var(--ichnite-primary-soft);
+    border-radius: 8px;
+    padding: 6px 8px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    /* 長いメモで枠が伸びすぎないよう、一定行数で省略する */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ichnite-dict-memo-textarea {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--ichnite-text);
+    resize: vertical;
+}
+
+.ichnite-dict-memo-textarea:focus {
+    outline: none;
+    border-color: var(--ichnite-primary);
+}
+
+.ichnite-dict-memo-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.ichnite-dict-memo-cancel,
+.ichnite-dict-memo-save {
+    border: none;
+    border-radius: 999px;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ichnite-dict-memo-cancel {
+    background: var(--ichnite-primary-soft);
+    color: #9a6300;
+}
+
+.ichnite-dict-memo-cancel:hover {
+    background: var(--ichnite-primary-soft-hover);
+}
+
+.ichnite-dict-memo-save {
+    background: var(--ichnite-primary);
+    color: #ffffff;
+}
+
+.ichnite-dict-memo-save:hover {
+    background: #e5a417;
+}
+
+.ichnite-dict-memo-save:disabled {
+    background: var(--ichnite-primary-soft);
+    color: var(--ichnite-text-muted);
+    cursor: default;
+}
+
+.ichnite-dict-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.ichnite-dict-memo-btn,
+.ichnite-dict-delete {
+    border: none;
+    border-radius: 999px;
+    background: var(--ichnite-primary-soft);
+    color: #9a6300;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.ichnite-dict-memo-btn:hover,
+.ichnite-dict-delete:hover {
+    background: var(--ichnite-primary-soft-hover);
+}
+
+
+/* フローティングボタン */
+#ichnite-floating-button {
+
+    position: fixed;
+
+    right: 20px;
+    bottom: 30px;
+
+    width: 56px;
+    height: 56px;
+
+    border-radius: 50%;
+
+    background: var(--ichnite-primary);
+
+    color: #ffffff;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 26px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    box-shadow: 0 6px 20px rgba(251, 182, 29, 0.45);
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+
+    z-index: 999999;
+}
+
+#ichnite-floating-button:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 24px rgba(251, 182, 29, 0.55);
+}
