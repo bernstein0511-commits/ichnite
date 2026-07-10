@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-"# ichnite" 
-"sobue kouki"
-"kawakami joi"
 =======
 # ichnite
 
