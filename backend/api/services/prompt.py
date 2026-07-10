@@ -1,3 +1,5 @@
+# services/prompt.py — AIに送るプロンプト文をここで一元管理する。
+# 出力形式（4項目のJSON）を変えたい場合はこのテンプレートだけを直せばよい。
 def build_prompt(selected_text: str) -> str:
     return f"""以下の語句または文章について、日本語で以下の4項目を答えてください。
 必ずJSON形式のみで返してください。前置きや説明文は不要です。

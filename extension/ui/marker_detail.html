@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>単語の詳細 - Ichnite</title>
+  <link rel="icon" href="../icons/icon_maincolor.png">
+  <link rel="stylesheet" href="marker_detail.css">
+</head>
+<body>
+<div class="container">
+
+  <header class="site-header">
+    <a class="site-logo" href="marker_book.html">
+      <img src="../icons/icon_maincolor.png" alt="" class="site-logo-icon" />
+      ichnite
+    </a>
+    <a class="back-link" href="marker_book.html">← 記録帳に戻る</a>
+  </header>
+
+  <main class="main-content">
+    <p class="loading-state" id="loading-state">読み込み中...</p>
+
+    <div class="detail-view" id="detail-view" hidden>
+      <div class="content-header">
+        <div class="title-group">
+          <h1 class="page-title">
+            <span id="word-text"></span>
+            <span class="title-badge" id="word-badge"></span>
+          </h1>
+          <div class="record-date">記録日：<time id="record-date"></time></div>
+        </div>
+        <div class="action-buttons">
+          <button type="button" id="btn-edit" class="btn btn-edit">メモを編集</button>
+          <button type="button" id="btn-delete" class="btn btn-delete">削除</button>
+        </div>
+      </div>
+
+      <hr class="divider-dashed">
+
+      <dl class="detail-list">
+        <div class="detail-row" id="row-memo">
+          <dt class="detail-term"><span class="label-text">メモ：</span></dt>
+          <dd class="detail-desc" id="memo-view"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt class="detail-term">
+            <span class="label-text">解説：</span>
+            <button type="button" class="link-btn" id="btn-regenerate-ai">生成</button>
+          </dt>
+          <dd class="detail-desc" id="explanation-view"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt class="detail-term"><span class="label-text">使用例：</span></dt>
+          <dd class="detail-desc" id="usage-view"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt class="detail-term"><span class="label-text">類似語：</span></dt>
+          <dd class="detail-desc" id="similar-view"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt class="detail-term"><span class="label-text">対義語：</span></dt>
+          <dd class="detail-desc" id="antonyms-view"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt class="detail-term"><span class="label-text">記録元：</span></dt>
+          <dd class="detail-desc" id="source-view"></dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="error-state" id="error-state" hidden>
+      <p>マーカーが見つかりませんでした。削除された可能性があります。</p>
+      <a class="btn" href="marker_book.html">記録帳に戻る</a>
+    </div>
+  </main>
+
+</div>
+
+<script src="marker_detail.js"></script>
+</body>
+</html>

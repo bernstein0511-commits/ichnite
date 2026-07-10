@@ -1,7 +1,14 @@
 /* =============================================
    マーカー記録帳  marker_book.js
    拡張機能のバックエンド(FastAPI)から実データを取得し、
-   一覧表示・検索/絞り込み・詳細表示・メモ編集・削除を行う。
+   一覧表示・検索/絞り込み・学習統計（ヒートマップ等）・メモ編集・削除を行う。
+
+   ※ ui/marker_book.html は content script ではなく独立した拡張機能ページ
+   （chrome-extension://.../ui/marker_book.html）として開かれるため、
+   modules/*.js（content.js・storage.js等）とはJSの実行コンテキストが別。
+   そのためAPI_BASEやnotifyMarkersUpdated()等をこのファイル内で
+   自前に定義している（modules/storage.jsの関数は使えない）。
+   単語1件だけの詳細はui/marker_detail.jsが同じ構成で担当する。
    ============================================= */
 
 const API_BASE = "http://localhost:8000";
@@ -15,6 +22,9 @@ const COLOR_LABEL = {
   purple: "紫",
 };
 
+// ── 曜日ラベル（0:日 〜 6:土） ───────────────────
+const WEEKDAY_LABEL = ["日", "月", "火", "水", "木", "金", "土"];
+
 // ── SVG アイコン ────────────────────────────────
 const ICON = {
   eye: `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
@@ -24,6 +34,11 @@ const ICON = {
 
 // ── データ ──────────────────────────────────────
 let markers = []; // サーバから取得した全件（画面表示用に加工済み）
+
+// サイドパネルなど他コンテキストへマーカーの変更を通知する
+function notifyMarkersUpdated(extra = {}) {
+  chrome.runtime.sendMessage({ type: "ichnite:markers-updated", ...extra }).catch(() => {});
+}
 
 // ── DOM 参照 ────────────────────────────────────
 const tableBody     = document.getElementById("marker-table-body");
@@ -37,6 +52,14 @@ const filterPeriod   = document.getElementById("filter-period");
 const filterKeyword  = document.getElementById("filter-keyword");
 const modalOverlay   = document.getElementById("modal-overlay");
 const modalBox       = document.getElementById("modal-box");
+const statTotal          = document.getElementById("stat-total");
+const statDays           = document.getElementById("stat-days");
+const statCurrentStreak  = document.getElementById("stat-current-streak");
+const statLongestStreak  = document.getElementById("stat-longest-streak");
+const statsHeatmap       = document.getElementById("stats-heatmap");
+const statsHeatmapMonths = document.getElementById("stats-heatmap-months");
+const statsHeatmapSummary = document.getElementById("stats-heatmap-summary");
+const statsColorBreakdown = document.getElementById("stats-color-breakdown");
 
 // ── データ取得 ──────────────────────────────────
 async function loadMarkerBook() {
@@ -65,6 +88,7 @@ async function loadMarkerBook() {
 
     populateSelects();
     applyFilters();
+    renderStats(markers);
     showStatus(`全 ${markers.length} 件のマーカーを読み込みました`, false);
   } catch (error) {
     console.log("記録帳の取得に失敗:", error);
@@ -165,7 +189,9 @@ function createRow(m) {
     </td>
   `;
 
-  tr.querySelector('[data-action="view"]').addEventListener("click", () => openViewModal(m));
+  tr.querySelector('[data-action="view"]').addEventListener("click", () => {
+    window.location.href = `marker_detail.html?id=${m.id}`;
+  });
   tr.querySelector('[data-action="edit"]').addEventListener("click", () => openEditModal(m));
   tr.querySelector('[data-action="delete"]').addEventListener("click", () => onDelete(m, tr));
 
@@ -215,69 +241,6 @@ function applyFilters() {
   });
 
   renderTable(filtered);
-}
-
-// ── 詳細表示モーダル ────────────────────────────
-function openViewModal(m) {
-  const date = new Date(m.createdAt);
-  const dateStr = `${date.toLocaleDateString("ja-JP")} ${date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`;
-
-  modalBox.innerHTML = `
-    <div class="modal-header">
-      <div class="modal-title">${escapeHtml(m.word)}</div>
-      <button class="modal-close" id="modal-close-btn">×</button>
-    </div>
-    <div class="modal-tag-row">
-      <span class="tag"><span class="color-dot ${escapeHtml(m.color)}"></span>${COLOR_LABEL[m.color] || escapeHtml(m.color)}</span>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-label">AIによる解説</div>
-      <div class="modal-section-body${m.explanation ? "" : " empty"}">${m.explanation ? escapeHtml(m.explanation) : "まだ生成されていません"}</div>
-    </div>
-
-    ${m.similarWords ? `
-    <div class="modal-section">
-      <div class="modal-section-label">類似語</div>
-      <div class="modal-section-body">${escapeHtml(m.similarWords)}</div>
-    </div>` : ""}
-
-    ${m.antonyms ? `
-    <div class="modal-section">
-      <div class="modal-section-label">対義語</div>
-      <div class="modal-section-body">${escapeHtml(m.antonyms)}</div>
-    </div>` : ""}
-
-    ${m.usageExample ? `
-    <div class="modal-section">
-      <div class="modal-section-label">例文</div>
-      <div class="modal-section-body">${escapeHtml(m.usageExample)}</div>
-    </div>` : ""}
-
-    <div class="modal-section">
-      <div class="modal-section-label">メモ</div>
-      <div class="modal-section-body${m.memo ? "" : " empty"}">${m.memo ? escapeHtml(m.memo) : "メモはまだありません"}</div>
-    </div>
-
-    <div class="modal-section">
-      <div class="modal-section-label">記録元</div>
-      <div class="modal-source">
-        <a href="${escapeHtml(m.pageUrl)}" target="_blank" rel="noopener">${escapeHtml(m.pageTitle)}</a><br>
-        ${dateStr} に記録
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn" id="modal-edit-btn">メモを編集</button>
-      <button class="btn primary" id="modal-close-btn2">閉じる</button>
-    </div>
-  `;
-
-  showModal();
-
-  modalBox.querySelector("#modal-close-btn").addEventListener("click", closeModal);
-  modalBox.querySelector("#modal-close-btn2").addEventListener("click", closeModal);
-  modalBox.querySelector("#modal-edit-btn").addEventListener("click", () => openEditModal(m));
 }
 
 // ── メモ編集モーダル ────────────────────────────
@@ -347,7 +310,9 @@ async function onDelete(m, tr) {
     markers = markers.filter(x => x.id !== m.id);
     tr.remove();
     if (tableBody.rows.length === 0) emptyState.hidden = false;
+    renderStats(markers);
     showStatus(`「${m.word}」を削除しました`, false);
+    notifyMarkersUpdated({ deletedMarkerId: m.id });
   } catch (error) {
     console.log("削除失敗:", error);
     alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
@@ -390,6 +355,174 @@ function shortenUrl(url) {
   }
 }
 
+// ── 学習の可視化 ────────────────────────────────
+function toDateKey(dateInput) {
+  const d = new Date(dateInput);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function renderStats(list) {
+  renderStatCards(list);
+  renderHeatmap(list);
+  renderColorBreakdown(list);
+}
+
+function renderStatCards(list) {
+  const dateCounts = new Map();
+  list.forEach(m => {
+    const key = toDateKey(m.createdAt);
+    dateCounts.set(key, (dateCounts.get(key) || 0) + 1);
+  });
+
+  const { current, longest } = computeStreaks(new Set(dateCounts.keys()));
+
+  statTotal.textContent = list.length;
+  statDays.textContent = dateCounts.size;
+  statCurrentStreak.textContent = `${current}日`;
+  statLongestStreak.textContent = `${longest}日`;
+}
+
+// 現在の連続記録日数・最長連続記録日数を求める
+function computeStreaks(dateSet) {
+  let current = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+
+  // 今日の記録がまだ無くてもstreakが途切れていない扱いにするため、昨日を起点にする
+  if (!dateSet.has(toDateKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  while (dateSet.has(toDateKey(cursor))) {
+    current++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  const sortedKeys = [...dateSet].sort();
+  let longest = 0;
+  let run = 0;
+  let prevDate = null;
+
+  for (const key of sortedKeys) {
+    const d = new Date(`${key}T00:00:00`);
+    if (prevDate) {
+      const diffDays = Math.round((d - prevDate) / 86400000);
+      run = diffDays === 1 ? run + 1 : 1;
+    } else {
+      run = 1;
+    }
+    longest = Math.max(longest, run);
+    prevDate = d;
+  }
+
+  return { current, longest };
+}
+
+// GitHub風のヒートマップ（直近18週間、日曜始まり）
+function renderHeatmap(list) {
+  if (!statsHeatmap) return;
+
+  const dateCounts = new Map();
+  list.forEach(m => {
+    const key = toDateKey(m.createdAt);
+    dateCounts.set(key, (dateCounts.get(key) || 0) + 1);
+  });
+
+  const WEEKS = 18;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - (WEEKS * 7 - 1));
+  start.setDate(start.getDate() - start.getDay()); // 週の始まり（日曜）に揃える
+
+  const days = [];
+  const cursor = new Date(start);
+  while (cursor <= today) {
+    const key = toDateKey(cursor);
+    days.push({ key, date: new Date(cursor), count: dateCounts.get(key) || 0 });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  const maxCount = Math.max(1, ...days.map(d => d.count));
+
+  statsHeatmap.innerHTML = "";
+  statsHeatmap.style.setProperty("--heatmap-weeks", Math.ceil(days.length / 7));
+
+  days.forEach(day => {
+    const cell = document.createElement("div");
+    cell.className = "heatmap-cell";
+    cell.dataset.level = heatLevel(day.count, maxCount);
+    cell.title = `${day.key}（${WEEKDAY_LABEL[day.date.getDay()]}）：${day.count}件`;
+    statsHeatmap.appendChild(cell);
+  });
+
+  renderHeatmapMonths(days);
+  renderHeatmapSummary(days);
+}
+
+// 週（列）の先頭日が月替わりのときだけ、その月をラベル表示する
+function renderHeatmapMonths(days) {
+  if (!statsHeatmapMonths) return;
+
+  const weeks = [];
+  for (let i = 0; i < days.length; i += 7) {
+    weeks.push(days.slice(i, i + 7));
+  }
+
+  let prevMonth = null;
+  statsHeatmapMonths.innerHTML = weeks.map(week => {
+    const month = week[0].date.getMonth();
+    const label = month !== prevMonth ? `${month + 1}月` : "";
+    prevMonth = month;
+    return `<span class="heatmap-month-label">${label}</span>`;
+  }).join("");
+}
+
+// ヒートマップの上に「直近◯週間で計◯件、記録した日は◯日」のサマリーを表示する
+function renderHeatmapSummary(days) {
+  if (!statsHeatmapSummary) return;
+
+  const totalCount = days.reduce((sum, d) => sum + d.count, 0);
+  const activeDays = days.filter(d => d.count > 0).length;
+  const avgPerDay = (totalCount / days.length).toFixed(1);
+
+  statsHeatmapSummary.textContent =
+    `直近${days.length}日間で計${totalCount}件のマーカーを記録（記録した日は${activeDays}日、1日あたり平均${avgPerDay}件）`;
+}
+
+function heatLevel(count, maxCount) {
+  if (count === 0) return 0;
+  const ratio = count / maxCount;
+  if (ratio <= 0.25) return 1;
+  if (ratio <= 0.5) return 2;
+  if (ratio <= 0.75) return 3;
+  return 4;
+}
+
+function renderColorBreakdown(list) {
+  if (!statsColorBreakdown) return;
+
+  const counts = { yellow: 0, green: 0, blue: 0, red: 0, purple: 0 };
+  list.forEach(m => {
+    if (counts[m.color] !== undefined) counts[m.color]++;
+  });
+
+  const total = list.length || 1;
+
+  statsColorBreakdown.innerHTML = Object.entries(counts).map(([color, count]) => `
+    <div class="color-bar-row">
+      <span class="tag"><span class="color-dot ${color}"></span>${COLOR_LABEL[color] || color}</span>
+      <div class="color-bar-track">
+        <div class="color-bar-fill ${color}" style="width: ${(count / total) * 100}%"></div>
+      </div>
+      <span class="color-bar-count">${count}</span>
+    </div>
+  `).join("");
+}
+
 // ── イベントリスナー登録 ────────────────────────
 filterPage.addEventListener("change", applyFilters);
 filterColor.addEventListener("change", applyFilters);
@@ -402,6 +535,13 @@ document.getElementById("btn-search").addEventListener("click", () => {
 
 document.getElementById("btn-refresh").addEventListener("click", loadMarkerBook);
 document.getElementById("btn-retry").addEventListener("click", loadMarkerBook);
+
+// 他コンテキスト（サイドパネル等）での変更を即時反映
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type === "ichnite:markers-updated") {
+    loadMarkerBook();
+  }
+});
 
 // ── 初期化 ─────────────────────────────────────
 loadMarkerBook();

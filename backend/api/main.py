@@ -1,3 +1,10 @@
+# ==========================================================
+# main.py — バックエンド(FastAPI)のエントリーポイント。
+# 役割：アプリ初期化、CORS/PNA対応、各routerの登録のみを行う。
+# 実際のDB操作はcrud.py、リクエスト/レスポンスの形はschemas.py、
+# テーブル定義はmodels.pyに分離してある。
+# ==========================================================
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
@@ -15,7 +22,7 @@ app = FastAPI(
     version="1.0"
 )
 
-# テーブル作成
+# 起動時にmodels.pyで定義したテーブルが無ければ作成する（マイグレーションは使っていない）
 Base.metadata.create_all(bind=engine)
 
 # CORS設定
@@ -29,6 +36,8 @@ app.add_middleware(
 
 
 # Private Network Access 対応ミドルウェア
+# ブラウザの拡張機能側（background.js）がlocalhostへfetchする際、
+# Chromiumがpreflight(OPTIONS)にこのヘッダーを要求してくることがあるため付与している。
 @app.middleware("http")
 async def add_private_network_header(request: Request, call_next):
     if request.method == "OPTIONS":
@@ -43,7 +52,11 @@ async def add_private_network_header(request: Request, call_next):
     return response
 
 
-# Router登録
+# Router登録（それぞれ routers/*.py にエンドポイント定義がある）
+# /pages        … 閲覧ページの登録・一覧（拡張機能が自動で呼ぶ）
+# /markers      … マーカーそのもののCRUD
+# /ai_notes     … AI解説の生成・取得
+# /marker_book  … 記録帳ページ用に4テーブルを結合した一覧・メモ更新
 app.include_router(
     pages.router,
     prefix="/pages",

@@ -1,3 +1,9 @@
+# ==========================================================
+# routers/marker_book.py — /marker_book 配下のエンドポイント。
+# 中心は GET /full（記録帳・サイドパネル・単語詳細ページが使う結合済み一覧）と
+# PUT /{marker_id}（ユーザーメモの追加・上書き）の2つ。
+# ==========================================================
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

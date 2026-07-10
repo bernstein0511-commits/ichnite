@@ -1,3 +1,16 @@
+# ==========================================================
+# models.py — SQLAlchemyのテーブル定義（4テーブル構成）。
+#
+#   Page (閲覧ページ) 1 ── N Marker (ハイライトした語句)
+#                              │ 1
+#                    ┌─────────┴─────────┐
+#                    │ 1                 │ 1
+#              AiNote (AI解説)      MarkerBook (ユーザーのメモ)
+#
+# Marker 1件に対して AiNote・MarkerBook はそれぞれ最大1件（unique制約）。
+# 実際のクエリ・更新ロジックはすべて crud.py に集約している。
+# ==========================================================
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,7 +28,7 @@ from datetime import datetime
 
 
 # ------------------------
-# pages
+# pages: マーカーを付けたWebページ（URL単位）
 # ------------------------
 class Page(Base):
 
@@ -51,7 +64,7 @@ class Page(Base):
 
 
 # ------------------------
-# markers
+# markers: 実際にハイライトした語句・フレーズ1件ごとの記録
 # ------------------------
 class Marker(Base):
 
@@ -79,6 +92,11 @@ class Marker(Base):
         default="yellow"
     )
 
+    # 注意：カラム名は「位置」だが、実際に入っているのは
+    # 「ページ内で同じ文字列の何番目の出現か」（occurrenceIndex, 0始まり）。
+    # 同じ単語がページ内に複数あってもマーカーの位置を一意に復元するための値で、
+    # position_start / position_end に同じ値を入れて使っている
+    # （拡張機能側 modules/textLocator.js・modules/restore.js 参照）。
     position_start = Column(
         Integer,
         nullable=False
@@ -116,7 +134,8 @@ class Marker(Base):
 
 
 # ------------------------
-# ai_notes
+# ai_notes: OpenAIが生成した語句の解説（マーカー1件につき最大1件）
+# services/ai_service.py が生成し、crud.upsert_ai_note() が保存/上書きする。
 # ------------------------
 class AiNote(Base):
 
@@ -136,8 +155,8 @@ class AiNote(Base):
     )
 
     explanation = Column(Text)
-    
-    similar_words = Column(Text) 
+
+    similar_words = Column(Text)
 
     antonyms = Column(Text)
 
@@ -146,6 +165,7 @@ class AiNote(Base):
 
     usage_example = Column(Text)
 
+    # 未使用（常にNULL）。ユーザーが書き込むメモはMarkerBook.memoの方を使っている。
     user_memo = Column(Text)
 
     created_at = Column(
@@ -168,7 +188,9 @@ class AiNote(Base):
 
 
 # ------------------------
-# marker_book
+# marker_book: ユーザーが書き込んだメモ（マーカー1件につき最大1件）
+# 拡張機能のサイドパネル／ページ上のホバーポップアップ／記録帳ページの
+# 「メモを追加・編集」はすべてこのテーブルを PUT /marker_book/{marker_id} 経由で更新する。
 # ------------------------
 class MarkerBook(Base):
 

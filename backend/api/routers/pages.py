@@ -1,3 +1,10 @@
+# ==========================================================
+# routers/pages.py — /pages 配下のエンドポイント。
+# 拡張機能はマーカーを保存する前に必ずPOST /pages/を呼び、
+# 現在見ているページのpage_idを取得してからマーカーを保存する
+# （storage.js の getOrCreatePage() 参照）。
+# ==========================================================
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

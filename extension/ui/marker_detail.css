@@ -1,0 +1,275 @@
+/* ===== Reset ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Base ===== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: #f7f8fa;
+  color: #1a1a2e;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ===== Header ===== */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.site-logo:hover {
+  color: #b8790f;
+}
+
+.site-logo-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.back-link {
+  font-size: 12.5px;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: #a36b00;
+  text-decoration: underline;
+}
+
+/* ===== States ===== */
+.loading-state,
+.error-state {
+  text-align: center;
+  color: #6b7280;
+  padding: 60px 0;
+}
+
+.error-state .btn {
+  display: inline-flex;
+  margin-top: 12px;
+}
+
+/* ===== Detail card ===== */
+.detail-view {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-top: 4px solid #fbb61d;
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.content-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  word-break: break-word;
+}
+
+.record-date {
+  font-size: 12.5px;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  transition: background 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn.primary {
+  background: #fbb61d;
+  border-color: #fbb61d;
+  color: #1a1a2e;
+}
+
+.btn.primary:hover {
+  background: #e5a417;
+  border-color: #e5a417;
+}
+
+.btn-delete {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-delete:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a36b00;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.link-btn:disabled {
+  color: #b0b4bb;
+  cursor: default;
+  text-decoration: none;
+}
+
+.divider-dashed {
+  border: none;
+  border-top: 1.5px dashed rgba(251, 182, 29, 0.45);
+  margin: 20px 0;
+}
+
+/* ===== Detail list ===== */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+}
+
+.detail-term {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  padding-top: 2px;
+}
+
+.detail-desc {
+  font-size: 13.5px;
+  color: #374151;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.detail-desc.empty {
+  color: #b0b4bb;
+}
+
+.source-url {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ===== Tag / color dot（記録帳と共通のスタイル） ===== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.color-dot.yellow { background: #f4c430; }
+.color-dot.green  { background: #4caf50; }
+.color-dot.blue   { background: #2196f3; }
+.color-dot.red    { background: #f44336; }
+.color-dot.purple { background: #9c27b0; }
+
+/* ===== メモのインライン編集 ===== */
+#memo-edit {
+  width: 100%;
+  min-height: 90px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #374151;
+  resize: vertical;
+}
+
+#memo-edit:focus {
+  outline: none;
+  border-color: #fbb61d;
+}
+
+.inline-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  grid-column: 1 / -1;
+}

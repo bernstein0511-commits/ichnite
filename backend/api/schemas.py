@@ -1,3 +1,9 @@
+# ==========================================================
+# schemas.py — APIのリクエスト/レスポンスの形（Pydanticモデル）。
+# models.pyのテーブル定義とは別物：ここではAPIの入出力の型・必須/任意だけを定義する。
+# 命名規則：〜Create = POST時の入力、〜Response = 返却値。
+# ==========================================================
+
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -86,6 +92,8 @@ class MarkerBookMemoUpdate(BaseModel):
 
 # ==========================
 # 記録帳ページ用（Page + Marker + AiNote + MarkerBook を結合した1件分）
+# GET /marker_book/full のレスポンス形。記録帳ページだけでなく、
+# 拡張機能のサイドパネルの一覧・単語詳細ページもこれを使っている。
 # ==========================
 
 class MarkerBookEntryResponse(BaseModel):

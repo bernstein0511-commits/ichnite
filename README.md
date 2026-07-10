@@ -2,7 +2,7 @@
 
 ### 必要なもの
 - Docker Desktop
-- OpenAI APIキー（有料プラン）
+- （任意）OpenAI APIキー … 未設定でもマーカーの作成・保存・記録帳などコア機能はすべて動作する。設定した場合のみ、マーカーのAI解説が追加で生成される。
 
 ### 手順
 
@@ -14,24 +14,11 @@ cd ichnite
 
 **2. `.env` ファイルを作成**
 
-`backend/api/.env.example` をコピーして `.env` を作成する
+`backend/api/.env.example` をコピーして `.env` を作成する（DB関連は初期値のままでOK。OpenAI APIキーを使う場合のみ`OPENAI_API_KEY`に自分のキーを入力する）
 
 ```bash
 cp backend/api/.env.example backend/api/.env
 ```
-
-`.env` を開いて以下を設定する
-DB_HOST=mysql
-
-DB_PORT=3306
-
-DB_NAME=ichnite
-
-DB_USER=root
-
-DB_PASSWORD=root
-
-OPENAI_API_KEY=sk-proj-xxxxxxxx  ← 自分のキーを入力
 
 **3. 起動**
 ```bash
@@ -44,21 +31,73 @@ docker compose up --build
 
 ---
 
-## Chrome拡張機能の読み込み
+## 拡張機能の読み込み
 
-**通常のページでAPIに接続するには、Chromeをセキュリティオプション付きで起動する必要があります（開発環境のみ）**
+Chrome専用のAPIは使用していないため、Chromium系ブラウザ（Chrome / Microsoft Edge / Brave など）であれば同じ手順でそのまま動作する。
 
-1. Chromeを完全に閉じる
-2. PowerShellで以下を実行する
+| ブラウザ | 拡張機能ページ |
+| --- | --- |
+| Chrome | `chrome://extensions` |
+| Microsoft Edge | `edge://extensions` |
+| Brave | `brave://extensions` |
 
-```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" --disable-web-security --disable-features=PrivateNetworkAccessChecks --user-data-dir="C:\tmp\chrome-dev"
+1. 上表の拡張機能ページを開く
+2. 「デベロッパーモード」をオン
+3. 「パッケージ化されていない拡張機能を読み込む」をクリック
+4. `extension` フォルダを選択
+
+特殊なフラグ付きでブラウザを起動する必要はない。APIへの通信は拡張機能のバックグラウンド（Service Worker）が代行するため、通常のプロファイルでそのまま動作する。
+
+※ Firefox・Safariは拡張機能の仕組み（API・Manifestの扱い）がChromiumと異なるため、この手順では動作しない。
+
+---
+
+## アーキテクチャ概要
+
+```
+Webページ (content script)  ⇄  background.js (Service Worker)  ⇄  FastAPI (backend)  ⇄  MySQL
+        │
+        └─ 拡張機能ページ（記録帳・単語詳細・ポップアップ）も同じFastAPIを直接叩く
 ```
 
-3. 起動したChromeで `chrome://extensions` を開く
-4. 右上の「デベロッパーモード」をオン
-5. 「パッケージ化されていない拡張機能を読み込む」をクリック
-6. `extension` フォルダを選択
+content script（Webページ上で動くコード）は Private Network Access の制約で
+`localhost`へ直接fetchできないため、必ず`background.js`経由でAPIを呼ぶ。
+一方、記録帳ページ等の拡張機能ページ（`chrome-extension://`）はその制約を受けないため直接fetchしている。
+
+### 拡張機能（`extension/`）
+
+| ファイル | 役割 |
+| --- | --- |
+| `manifest.json` | 拡張機能の設定（権限・読み込むファイル一覧） |
+| `background.js` | Service Worker。APIプロキシ／記録帳タブの管理／タブ間の変更通知の中継 |
+| `content/content.js` | 全content scriptで共有するグローバル状態・ユーティリティ（最初に読み込まれる） |
+| `content/content.css` | ページ本文に挿入されるハイライト自体のスタイル |
+| `content/panel-ui.css` | 拡張機能UI（サイドパネル等）のスタイル。Shadow DOM内でのみ読み込む |
+| `modules/shadowHost.js` | 拡張機能UIをShadow DOMに隔離するための共通の入れ物を用意する |
+| `modules/storage.js` | バックエンドAPIを呼ぶ関数をまとめた層（content script側） |
+| `modules/textLocator.js` | 「ページ内で同じ文字列の何番目の出現か」でマーカー位置を特定するロジック |
+| `modules/marker.js` | 新規マーカー作成（選択→ツールバー→保存→AI解説生成）と削除の実処理 |
+| `modules/restore.js` | ページ読み込み時に保存済みマーカーをDOMへ復元する |
+| `modules/popup.js` | ページ上のハイライトにホバーした時に出るメモポップアップ |
+| `modules/panel.js` | 右上のサイドパネル（マーカー一覧・絞り込み・メモ編集） |
+| `ui/popup.html` `.js` | ツールバーアイコンをクリックした時の小さなポップアップ |
+| `ui/marker_book.html` `.js` `.css` | マーカー記録帳ページ（一覧・検索・学習統計・削除） |
+| `ui/marker_detail.html` `.js` `.css` | 単語1件ごとの詳細ページ（メモ編集・AI解説の生成/再生成） |
+| `icons/` | ロゴ画像（サイドパネル・記録帳ページで使用） |
+
+### バックエンド（`backend/api/`）
+
+| ファイル | 役割 |
+| --- | --- |
+| `main.py` | FastAPIアプリの起動点。CORS設定とrouter登録のみ |
+| `config.py` | `.env`の読み込み（DB接続情報・OpenAI APIキー） |
+| `database.py` | DB接続・セッション管理 |
+| `models.py` | テーブル定義（`pages` / `markers` / `ai_notes` / `marker_book`） |
+| `schemas.py` | APIのリクエスト/レスポンスの型（Pydantic） |
+| `crud.py` | 実際のDB読み書き処理 |
+| `routers/*.py` | エンドポイント定義（HTTPの窓口。処理自体はcrud.pyに委譲） |
+| `services/prompt.py` | AIに送るプロンプト文の組み立て |
+| `services/ai_service.py` | OpenAI API呼び出しのラッパー |
 
 ---
 
@@ -78,8 +117,7 @@ docker compose up --build
 
 ## 未実装
 
-- AI解説の吹き出し表示（OpenAIクレジット要）
-- 辞書パネルのCSS
+- AI解説の表示（要OpenAIクレジット）
 
 ## 記録帳ページ用に追加したAPI
 

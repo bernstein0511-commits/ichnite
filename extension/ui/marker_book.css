@@ -28,14 +28,29 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 20px;
+  padding-bottom: 16px;
   gap: 16px;
+  border-bottom: 2px solid rgba(251, 182, 29, 0.35);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .header-left h1 {
   font-size: 22px;
   font-weight: 700;
   color: #1a1a2e;
-  margin-bottom: 6px;
   line-height: 1.3;
 }
 
@@ -74,14 +89,14 @@ body {
 }
 
 .btn.primary {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: #fff;
+  background: #fbb61d;
+  border-color: #fbb61d;
+  color: #1a1a2e;
 }
 
 .btn.primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #e5a417;
+  border-color: #e5a417;
 }
 
 .btn svg {
@@ -100,9 +115,9 @@ body {
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 12.5px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background: rgba(251, 182, 29, 0.14);
+  color: #8a5b00;
+  border: 1px solid rgba(251, 182, 29, 0.4);
 }
 
 .status-bar.error {
@@ -137,7 +152,7 @@ body {
 
 .filter-select:focus {
   outline: none;
-  border-color: #60a5fa;
+  border-color: #fbb61d;
 }
 
 .filter-search {
@@ -164,7 +179,7 @@ body {
 
 .filter-search input:focus {
   outline: none;
-  border-color: #60a5fa;
+  border-color: #fbb61d;
 }
 
 .filter-search .search-icon {
@@ -260,11 +275,195 @@ td {
   flex-shrink: 0;
 }
 
-.color-dot.yellow { background: #f4c430; }
-.color-dot.green  { background: #4caf50; }
-.color-dot.blue   { background: #2196f3; }
-.color-dot.red    { background: #f44336; }
-.color-dot.purple { background: #9c27b0; }
+.color-dot.yellow, .color-bar-fill.yellow { background: #f4c430; }
+.color-dot.green,  .color-bar-fill.green  { background: #4caf50; }
+.color-dot.blue,   .color-bar-fill.blue   { background: #2196f3; }
+.color-dot.red,    .color-bar-fill.red    { background: #f44336; }
+.color-dot.purple, .color-bar-fill.purple { background: #9c27b0; }
+
+/* ===== Stats (学習の可視化) ===== */
+.stats-section {
+  margin-bottom: 20px;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-top: 3px solid #fbb61d;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #b8790f;
+  line-height: 1.3;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.stats-panels {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+.stats-panel {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+}
+
+.stats-panel-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.heatmap-summary {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+}
+
+/* 月ラベル：週（列）ごとに1つ。ヒートマップ本体と列幅を揃える */
+.heatmap-months {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 14px;
+  margin-left: 20px; /* 曜日ラベル分のオフセット */
+  margin-bottom: 2px;
+}
+
+.heatmap-month-label {
+  font-size: 10px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.heatmap-body {
+  display: flex;
+  gap: 4px;
+}
+
+/* 曜日ラベル：ヒートマップの行の高さに合わせる */
+.heatmap-weekdays {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heatmap-weekdays span {
+  width: 16px;
+  height: 11px;
+  line-height: 11px;
+  font-size: 9px;
+  color: #9ca3af;
+}
+
+/* ヒートマップ：週を列、曜日(日〜土)を行としたグリッド */
+.heatmap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+  width: max-content;
+}
+
+.heatmap-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: #ebedf0;
+}
+
+.heatmap-cell[data-level="1"] { background: #ffe4a8; }
+.heatmap-cell[data-level="2"] { background: #ffcf6e; }
+.heatmap-cell[data-level="3"] { background: #ffb833; }
+.heatmap-cell[data-level="4"] { background: #f59e0b; }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.heatmap-legend-label {
+  font-size: 10.5px;
+  color: #9ca3af;
+}
+
+.heatmap-legend .heatmap-legend-label:first-child {
+  margin-right: 2px;
+}
+
+.heatmap-legend .heatmap-legend-label:last-child {
+  margin-left: 2px;
+}
+
+.color-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-bar-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 20px;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-bar-row .tag {
+  justify-self: start;
+}
+
+.color-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.color-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.color-bar-count {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-panels {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ===== Memo cell ===== */
 .cell-memo {
@@ -277,6 +476,7 @@ td {
   color: #374151;
   line-height: 1.6;
   margin-bottom: 5px;
+  white-space: pre-wrap;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -294,6 +494,7 @@ td {
   align-items: flex-start;
   gap: 4px;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .memo-note::before {
@@ -311,7 +512,7 @@ td {
 }
 
 .source-link {
-  color: #3b82f6;
+  color: #a36b00;
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
@@ -479,46 +680,8 @@ td {
   color: #374151;
 }
 
-.modal-tag-row {
-  margin: 8px 0 16px;
-}
-
 .modal-section {
   margin-bottom: 16px;
-}
-
-.modal-section-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 6px;
-}
-
-.modal-section-body {
-  font-size: 13.5px;
-  color: #374151;
-  line-height: 1.7;
-  white-space: pre-wrap;
-}
-
-.modal-section-body.empty {
-  color: #b0b4bb;
-}
-
-.modal-source {
-  font-size: 12.5px;
-  color: #6b7280;
-}
-
-.modal-source a {
-  color: #3b82f6;
-  text-decoration: none;
-}
-
-.modal-source a:hover {
-  text-decoration: underline;
 }
 
 .modal textarea {
@@ -536,7 +699,7 @@ td {
 
 .modal textarea:focus {
   outline: none;
-  border-color: #60a5fa;
+  border-color: #fbb61d;
 }
 
 .modal-footer {

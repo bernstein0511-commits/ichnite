@@ -1,3 +1,9 @@
+# ==========================================================
+# routers/markers.py — /markers 配下のエンドポイント（マーカー本体のCRUD）。
+# GET /markers/ はページ絞り込みをせず全件返す。ページ単位の絞り込みは
+# 拡張機能側（storage.js の fetchMarkersForPage）でpage_idを見て行っている。
+# ==========================================================
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

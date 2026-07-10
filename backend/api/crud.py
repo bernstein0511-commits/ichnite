@@ -1,3 +1,8 @@
+# ==========================================================
+# crud.py — 実際のDB読み書きをまとめた層。
+# routers/*.py はHTTPの窓口に徹し、DB操作はすべてここの関数に委譲する。
+# ==========================================================
+
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
@@ -80,6 +85,24 @@ def create_ai_note(db: Session, note: schemas.AiNoteCreate):
     return db_note
 
 
+# marker_idごとに一意（unique制約）のため、既存があれば上書き、無ければ新規作成する。
+# マーカー記録帳からの再生成・リトライでも安全に呼べるようにするため。
+def upsert_ai_note(db: Session, note: schemas.AiNoteCreate):
+    existing = db.query(models.AiNote).filter(models.AiNote.marker_id == note.marker_id).first()
+
+    if existing:
+        existing.explanation = note.explanation
+        existing.similar_words = note.similar_words
+        existing.antonyms = note.antonyms
+        existing.translation = note.translation
+        existing.usage_example = note.usage_example
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    return create_ai_note(db, note)
+
+
 def get_ai_note(db: Session, marker_id: int):
     note = db.query(models.AiNote).filter(models.AiNote.marker_id == marker_id).first()
     if not note:
@@ -128,6 +151,8 @@ def upsert_marker_book_memo(db: Session, marker_id: int, memo: str):
 
 # ==========================
 # 記録帳ページ用（一覧を結合して1件ずつ返す）
+# GET /marker_book/full の実体。Marker起点にPage/AiNote/MarkerBookを
+# joinedloadでまとめて取得し、フラットな辞書のリストに整形して返す。
 # ==========================
 
 def get_marker_book_entries(db: Session):
