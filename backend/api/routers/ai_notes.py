@@ -31,7 +31,7 @@ def generate_and_save_ai_note(
         explanation=ai_result["explanation"],
         similar_words=ai_result["similar_words"],
         antonyms=ai_result["antonyms"],
-        translation="",          # 必要であれば後でプロンプトに追加
+        translation=ai_result["translation"],
         usage_example=ai_result["usage_example"],
         user_memo=None,
     )
@@ -44,3 +44,24 @@ def get_ai_note(
     db: Session = Depends(get_db)
 ):
     return crud.get_ai_note(db, marker_id)
+
+
+@router.put("/{marker_id}", response_model=schemas.AiNoteResponse)
+def regenerate_ai_note(
+    marker_id: int,
+    request: schemas.AiRegenerateRequest,
+    db: Session = Depends(get_db)
+):
+    # AIに解説を再生成させる
+    ai_result = generate_ai_note(request.selected_text)
+
+    note_data = schemas.AiNoteCreate(
+        marker_id=marker_id,
+        explanation=ai_result["explanation"],
+        similar_words=ai_result["similar_words"],
+        antonyms=ai_result["antonyms"],
+        translation=ai_result["translation"],
+        usage_example=ai_result["usage_example"],
+        user_memo=None,
+    )
+    return crud.update_ai_note(db, marker_id, note_data)

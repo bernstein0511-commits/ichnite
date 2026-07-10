@@ -1,12 +1,14 @@
 ## セットアップ
 
 ### 必要なもの
+
 - Docker Desktop
 - （任意）OpenAI APIキー … 未設定でもマーカーの作成・保存・記録帳などコア機能はすべて動作する。設定した場合のみ、マーカーのAI解説が追加で生成される。
 
 ### 手順
 
 **1. リポジトリをクローン**
+
 ```bash
 git clone <リポジトリURL>
 cd ichnite
@@ -21,6 +23,7 @@ cp backend/api/.env.example backend/api/.env
 ```
 
 **3. 起動**
+
 ```bash
 docker compose up --build
 ```

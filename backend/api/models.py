@@ -118,6 +118,10 @@ class Marker(Base):
         back_populates="markers"
     )
 
+    @property
+    def page_url(self):
+        return self.page.url if self.page else None
+
     ai_note = relationship(
         "AiNote",
         back_populates="marker",

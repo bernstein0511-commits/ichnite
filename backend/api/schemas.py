@@ -41,6 +41,7 @@ class MarkerCreate(BaseModel):
 class MarkerResponse(MarkerCreate):
     marker_id: int
     created_at: datetime
+    page_url: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -121,4 +122,8 @@ class MarkerBookEntryResponse(BaseModel):
 
 class AiGenerateRequest(BaseModel):
     marker_id: int
+    selected_text: str
+
+
+class AiRegenerateRequest(BaseModel):
     selected_text: str
