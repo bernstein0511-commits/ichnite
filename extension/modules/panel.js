@@ -143,6 +143,27 @@ function createSidePanel() {
     floatingButton.style.display = "none";
     loadMarkerList();  // パネルを開くたびに最新を取得
   });
+
+  // サイドパネル自体のドラッグ移動（フローティングボタンと同じ仕組み）。
+  // ヘッダーのボタン（閉じる／マーカー切替等）の上から始めた場合はドラッグにせず、通常のクリックとして扱う。
+  const panelHeader = root.getElementById("ichnite-panel-header");
+  let isPanelDragging = false;
+  let panelOffsetX = 0, panelOffsetY = 0;
+
+  panelHeader.addEventListener("mousedown", (event) => {
+    if (event.target.closest("button")) return;
+    isPanelDragging = true;
+    panelOffsetX = event.clientX - panel.offsetLeft;
+    panelOffsetY = event.clientY - panel.offsetTop;
+  });
+
+  document.addEventListener("mousemove", (event) => {
+    if (!isPanelDragging) return;
+    panel.style.left = `${event.clientX - panelOffsetX}px`;
+    panel.style.top = `${event.clientY - panelOffsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => { isPanelDragging = false; });
 }
 
 
@@ -280,7 +301,8 @@ function goToMarker(marker) {
     try {
       const target = new URL(marker.page_url);
       target.searchParams.set("ichniteMarkerId", marker.marker_id);
-      window.location.href = target.toString();
+      // 現在のタブを奪わないよう、別タブで開く（background.js経由。content scriptはchrome.tabsを直接使えない）
+      chrome.runtime.sendMessage({ type: "ichnite:open-tab", url: target.toString() });
     } catch (error) {
       console.log("遷移先URLの解析に失敗:", error.message);
     }

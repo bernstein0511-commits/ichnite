@@ -42,6 +42,7 @@ const btnDelete         = document.getElementById("btn-delete");
 const btnRegenerateAi   = document.getElementById("btn-regenerate-ai");
 
 let marker = null;
+let allEntries = [];
 
 // サイドパネルなど他コンテキストへマーカーの変更を通知する
 function notifyMarkersUpdated(extra = {}) {
@@ -65,6 +66,37 @@ function shortenUrl(url) {
   }
 }
 
+// text内に、自分以外の登録済みマーカーの単語が含まれていれば、その単語詳細ページへのリンクに変換する
+function linkifyRegisteredWords(text, currentMarkerId) {
+  const escaped = escapeHtml(text || "");
+  if (!escaped) return escaped;
+
+  // 同じ単語が複数登録されていても最初の1件だけを採用し、長い単語ほど優先してマッチさせる
+  // （例："good"と"good idea"が両方登録されていた場合、"good idea"を先にリンク化する）
+  const seenWords = new Set();
+  const candidates = [];
+  for (const entry of allEntries) {
+    if (entry.marker_id === currentMarkerId) continue;
+    const word = (entry.selected_text || "").trim();
+    if (!word || seenWords.has(word)) continue;
+    seenWords.add(word);
+    candidates.push({ id: entry.marker_id, escapedWord: escapeHtml(word) });
+  }
+  if (candidates.length === 0) return escaped;
+
+  candidates.sort((a, b) => b.escapedWord.length - a.escapedWord.length);
+
+  const idByEscapedWord = new Map(candidates.map(c => [c.escapedWord, c.id]));
+  const pattern = candidates
+    .map(c => c.escapedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+
+  return escaped.replace(new RegExp(`(${pattern})`, "g"), (match) => {
+    const id = idByEscapedWord.get(match);
+    return `<a href="marker_detail.html?id=${id}" class="linked-word">${match}</a>`;
+  });
+}
+
 // ── データ取得 ──────────────────────────────────
 async function loadMarker() {
   if (!markerId) {
@@ -77,6 +109,7 @@ async function loadMarker() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
+    allEntries = data;
     const entry = data.find(item => item.marker_id === markerId);
 
     if (!entry) {
@@ -128,7 +161,11 @@ function renderMarker() {
 
   renderMemo();
 
-  explanationView.textContent = marker.explanation || "まだ生成されていません";
+  if (marker.explanation) {
+    explanationView.innerHTML = linkifyRegisteredWords(marker.explanation, marker.id);
+  } else {
+    explanationView.textContent = "まだ生成されていません";
+  }
   explanationView.classList.toggle("empty", !marker.explanation);
   btnRegenerateAi.textContent = marker.explanation ? "再生成" : "生成";
 
@@ -147,7 +184,11 @@ function renderMarker() {
 }
 
 function renderMemo() {
-  memoView.textContent = marker.memo || "メモはまだありません";
+  if (marker.memo) {
+    memoView.innerHTML = linkifyRegisteredWords(marker.memo, marker.id);
+  } else {
+    memoView.textContent = "メモはまだありません";
+  }
   memoView.classList.toggle("empty", !marker.memo);
 }
 

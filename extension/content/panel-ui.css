@@ -168,6 +168,8 @@
     background: var(--ichnite-primary);
 
     color: #ffffff;
+
+    cursor: grab;
 }
 
 /* 1段目：タイトルと閉じるボタン */

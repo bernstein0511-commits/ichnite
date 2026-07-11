@@ -16,6 +16,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return;
   }
 
+  if (message?.type === "ichnite:open-tab") {
+    // サイドパネルから別ページのマーカーへ移動する際、現在のタブを奪わず新しいタブで開く
+    chrome.tabs.create({ url: message.url });
+    return;
+  }
+
   if (message?.type === "ichnite:markers-updated") {
     // chrome.runtime.sendMessage は拡張ページ（記録帳など）には届くが、
     // 他タブのコンテンツスクリプトには届かないため、ここで中継する。

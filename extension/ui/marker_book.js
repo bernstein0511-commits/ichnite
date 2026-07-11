@@ -165,8 +165,9 @@ function createRow(m) {
 
   tr.innerHTML = `
     <td class="cell-word">
-      <div class="word-name">${escapeHtml(m.word)}</div>
-      <span class="tag"><span class="color-dot ${escapeHtml(m.color)}"></span>${COLOR_LABEL[m.color] || escapeHtml(m.color)}</span>
+      <div class="word-badge ${escapeHtml(m.color)}">
+        <span class="word-name">${escapeHtml(m.word)}</span>
+      </div>
     </td>
     <td class="cell-memo">
       <div class="memo-desc${m.explanation ? "" : " empty"}">${explanationHtml}</div>
@@ -182,9 +183,9 @@ function createRow(m) {
     </td>
     <td class="cell-actions">
       <div class="action-group">
-        <button class="action-btn" data-action="view">${ICON.eye}表示</button>
-        <button class="action-btn" data-action="edit">${ICON.edit}編集</button>
-        <button class="action-btn delete" data-action="delete">${ICON.trash}削除</button>
+        <button class="action-btn" data-action="view" title="表示">${ICON.eye}</button>
+        <button class="action-btn" data-action="edit" title="編集">${ICON.edit}</button>
+        <button class="action-btn delete" data-action="delete" title="削除">${ICON.trash}</button>
       </div>
     </td>
   `;
