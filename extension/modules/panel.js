@@ -101,7 +101,7 @@ function createSidePanel() {
   // フローティングボタン（初期状態はこちらを表示する）
   const floatingButton = document.createElement("div");
   floatingButton.id = "ichnite-floating-button";
-  floatingButton.innerHTML = "☰";
+  floatingButton.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon_white.png")}" alt="" id="ichnite-floating-icon" />`;
   root.appendChild(floatingButton);
 
   // 閉じる
