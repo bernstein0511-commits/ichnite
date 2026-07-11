@@ -9,6 +9,8 @@ document.addEventListener(
   "mouseover",
   (event) => {
 
+    if (!ichniteToolbarEnabled) return;
+
     const target =
       event.target;
 

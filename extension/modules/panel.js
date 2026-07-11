@@ -48,7 +48,7 @@ function createSidePanel() {
       </div>
       <div id="ichnite-panel-header-actions">
         <button id="toggleMarkers" title="ページ上のマーカー表示を切り替え">マーカー: 表示</button>
-        <button id="toggleToolbar" title="文字選択時のカラー選択ポップアップを切り替え">カラー選択: 表示</button>
+        <button id="toggleToolbar" title="文字のポップアップ表示を切り替え">ポップアップ: 表示</button>
         <button id="openMarkerBook" title="マーカー記録帳を開く">記録帳</button>
       </div>
     </div>
@@ -87,9 +87,12 @@ function createSidePanel() {
   toggleToolbarBtn.onclick = () => {
     toolbarEnabled = !toolbarEnabled;
     ichniteToolbarEnabled = toolbarEnabled;
-    toggleToolbarBtn.textContent = toolbarEnabled ? "カラー選択: 表示" : "カラー選択: 非表示";
+    toggleToolbarBtn.textContent = toolbarEnabled ? "ポップアップ: 表示" : "ポップアップ: 非表示";
     toggleToolbarBtn.classList.toggle("is-off", !toolbarEnabled);
-    if (!toolbarEnabled) removeToolbar();
+    if (!toolbarEnabled) {
+      removeToolbar();
+      removeMemoPopup();
+    }
   };
 
   // 現在のページのマーカーだけに絞り込む
