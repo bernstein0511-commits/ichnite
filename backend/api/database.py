@@ -1,7 +1,10 @@
 # ==========================================================
-# database.py — MySQL接続の設定と、各リクエストにDBセッションを
+# database.py — SQLite接続の設定と、各リクエストにDBセッションを
 # 渡すための get_db()（routerが Depends(get_db) で使う）を提供する。
 # テーブル定義そのものは models.py 側にある。
+#
+# DBはconfig.DB_PATHの単一ファイル（既定: backend/ichnite.db）。
+# サーバープロセスや追加のインストールが不要で、Pythonだけでそのまま動く。
 # ==========================================================
 
 from sqlalchemy import create_engine
@@ -10,15 +13,14 @@ from sqlalchemy.orm import sessionmaker
 
 import config
 
-DATABASE_URL = (
-    f"mysql+pymysql://{config.DB_USER}:{config.DB_PASSWORD}"
-    f"@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}?charset=utf8mb4"
-)
+DATABASE_URL = f"sqlite:///{config.DB_PATH}"
 
 engine = create_engine(
     DATABASE_URL,
     echo=True,
-    pool_pre_ping=True
+    # SQLiteの接続はデフォルトで作成したスレッドでしか使えないが、FastAPIは
+    # リクエストごとに別スレッドから同じセッションを使うためこの指定が必要
+    connect_args={"check_same_thread": False},
 )
 
 SessionLocal = sessionmaker(

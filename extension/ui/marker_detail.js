@@ -262,7 +262,19 @@ btnRegenerateAi.addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ marker_id: marker.id, selected_text: marker.word }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    if (!res.ok) {
+      // バックエンドの実際のエラー理由（detail）を拾う。取れない場合のみHTTPステータスにフォールバックする
+      let detail = `HTTP ${res.status}`;
+      try {
+        const errBody = await res.json();
+        if (errBody?.detail) detail = errBody.detail;
+      } catch {
+        // レスポンスがJSONでない場合はHTTPステータスのままにする
+      }
+      throw new Error(detail);
+    }
+
     const aiNote = await res.json();
 
     marker.explanation = aiNote.explanation || "";
@@ -274,7 +286,7 @@ btnRegenerateAi.addEventListener("click", async () => {
     notifyMarkersUpdated();
   } catch (error) {
     console.log("AI解説生成失敗:", error);
-    alert("AI解説の生成に失敗しました。バックエンドのOPENAI_API_KEY設定を確認してください。");
+    alert(`AI解説の生成に失敗しました。\n${error.message}`);
     btnRegenerateAi.disabled = false;
     btnRegenerateAi.textContent = original;
   }

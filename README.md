@@ -2,35 +2,32 @@
 
 ### 必要なもの
 
-- Docker Desktop
+- Python 3.10以上（[python.org](https://www.python.org/) からインストール）
 - （任意）OpenAI APIキー … 未設定でもマーカーの作成・保存・記録帳などコア機能はすべて動作する。設定した場合のみ、マーカーのAI解説が追加で生成される。
+
+Dockerは不要。DBはSQLite（`backend/ichnite.db`という単一ファイル）を使うため、別途DBサーバーの用意も不要。`.env`ファイルも作らなくてもそのまま起動できる。
 
 ### 手順
 
-**1. リポジトリをクローン**
+**1. リポジトリをクローン（またはzipを展開）**
 
 ```bash
 git clone <リポジトリURL>
 cd ichnite
 ```
 
-**2. `.env` ファイルを作成**
+**2. 起動スクリプトを実行**
 
-`backend/api/.env.example` をコピーして `.env` を作成する（DB関連は初期値のままでOK。OpenAI APIキーを使う場合のみ`OPENAI_API_KEY`に自分のキーを入力する）
+- Windows：`start.bat` をダブルクリック
+- macOS/Linux：ターミナルで `./start.sh` を実行
 
-```bash
-cp backend/api/.env.example backend/api/.env
-```
+初回は仮想環境の作成と依存パッケージのインストールが自動で走るため少し時間がかかるが、2回目以降はすぐに起動する。
 
-**3. 起動**
-
-```bash
-docker compose up --build
-```
-
-**4. 確認**
+**3. 確認**
 
 `http://localhost:8000/docs` が開けばOK
+
+AI解説機能を使いたい場合のみ、起動前に `backend/api/.env.example` を `backend/api/.env` としてコピーし、`OPENAI_API_KEY` に自分のキーを入力しておく（コピーしなくても他の機能はすべて動く）。
 
 ---
 

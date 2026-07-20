@@ -1,8 +1,11 @@
 # ==========================================================
-# config.py — backend/api/.env を読み込み、DB接続情報とOpenAI
-# APIキーをアプリ全体で使える定数として公開する。
-# OPENAI_API_KEYは未設定(空文字)でも動作し、その場合AI解説機能だけが
-# 無効化される（services/ai_service.py 参照）。
+# config.py — backend/api/.env（あれば）を読み込み、DB保存先パスと
+# OpenAI APIキーをアプリ全体で使える定数として公開する。
+#
+# .envファイルは無くてもそのまま動く：
+#   - DB_PATH … 未設定なら backend/ichnite.db（SQLiteの単一ファイル）を使う
+#   - OPENAI_API_KEY … 未設定でもコア機能（マーカーの作成・保存・記録帳等）は動く。
+#     AI解説機能だけが無効化される（services/ai_service.py 参照）
 # ==========================================================
 
 from dotenv import load_dotenv
@@ -11,10 +14,8 @@ import os
 
 load_dotenv(Path(__file__).parent / ".env")
 
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+# backend/api/config.py から見て backend/ 直下にSQLiteファイルを置く
+_DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "ichnite.db"
+DB_PATH = os.getenv("DB_PATH", str(_DEFAULT_DB_PATH))
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
