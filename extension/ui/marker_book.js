@@ -9,9 +9,22 @@
    そのためAPI_BASEやnotifyMarkersUpdated()等をこのファイル内で
    自前に定義している（modules/storage.jsの関数は使えない）。
    単語1件だけの詳細はui/marker_detail.jsが同じ構成で担当する。
+   データの実体はbackground.js経由のchrome.storage.local（バックエンド不要）。
    ============================================= */
 
-const API_BASE = "http://localhost:8000";
+// background.js（chrome.storage.local）へのデータ要求。
+// modules/storage.js の ichniteDataRequest と同じ形の呼び出し方だが、
+// このページはcontent scriptとは別の実行コンテキストのため自前で定義する。
+async function ichniteDataRequest(action, payload) {
+  const response = await chrome.runtime.sendMessage({
+    type: "ichnite:data",
+    action,
+    payload,
+  });
+  if (!response) throw new Error("拡張機能のバックグラウンドと通信できませんでした");
+  if (!response.ok) throw new Error(response.error || "不明なエラーが発生しました");
+  return response.data;
+}
 
 // ── 色の日本語ラベル ─────────────────────────────
 const COLOR_LABEL = {
@@ -66,10 +79,7 @@ async function loadMarkerBook() {
   setViewState("loading");
 
   try {
-    const res = await fetch(`${API_BASE}/marker_book/full`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
+    const data = await ichniteDataRequest("fetchMarkerBookEntries");
 
     markers = data.map(item => ({
       id: item.marker_id,
@@ -285,19 +295,13 @@ function openEditModal(m) {
       console.log("メモ保存失敗:", error);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
     }
   });
 }
 
 async function saveMemo(markerId, memo) {
-  const res = await fetch(`${API_BASE}/marker_book/${markerId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memo }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+  return await ichniteDataRequest("saveMarkerMemo", { markerId, memo });
 }
 
 // ── 削除 ────────────────────────────────────────
@@ -305,8 +309,7 @@ async function onDelete(m, tr) {
   if (!confirm(`「${m.word}」を削除しますか？\nこの操作は取り消せません。`)) return;
 
   try {
-    const res = await fetch(`${API_BASE}/markers/${m.id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await ichniteDataRequest("deleteMarker", { markerId: m.id });
 
     markers = markers.filter(x => x.id !== m.id);
     tr.remove();
@@ -316,7 +319,7 @@ async function onDelete(m, tr) {
     notifyMarkersUpdated({ deletedMarkerId: m.id });
   } catch (error) {
     console.log("削除失敗:", error);
-    alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
+    alert(`削除に失敗しました。\n${error.message}`);
   }
 }
 

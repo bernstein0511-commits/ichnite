@@ -7,3 +7,12 @@ document
     .addEventListener("click", () => {
         chrome.runtime.sendMessage({ type: "ichnite:open-marker-book" });
     });
+
+document
+    .getElementById("settingsBtn")
+    .addEventListener("click", () => {
+        chrome.runtime.sendMessage({
+            type: "ichnite:open-tab",
+            url: chrome.runtime.getURL("ui/settings.html"),
+        });
+    });

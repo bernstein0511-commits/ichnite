@@ -1,14 +1,19 @@
 // ==========================================================
 // background.js — 拡張機能のService Worker（バックグラウンド）。
-// 常駐して以下の3役を担う：
-//   1. content script(storage.js)の代わりにバックエンドAPIへfetchする
-//      （Private Network Access回避。詳細はstorage.jsのコメント参照）
-//   2. 「記録帳を開く」要求を受けて、既存タブがあればそこへ切り替え、無ければ新規作成
-//   3. あるタブでのマーカー変更を、他の全タブのcontent scriptへ中継する
+// 常駐して以下の役割を担う：
+//   1. マーカー・メモ・AI解説の読み書き（chrome.storage.localを直接操作。
+//      実処理は modules/dataStore.js）
+//      ※以前はローカルで動かすFastAPIバックエンドにfetchしていたが、
+//        この構成では拡張機能単体で完結する（外部サーバー・Python等は不要）
+//   2. OpenAI APIの直接呼び出し（AI解説の生成。実処理は modules/aiService.js。
+//      APIキーは ui/settings.html で登録し、chrome.storage.localに保存する）
+//   3. 「記録帳を開く」要求を受けて、既存タブがあればそこへ切り替え、無ければ新規作成
+//   4. 別タブでマーカー位置へ移動する要求を受けて新しいタブを開く
+//   5. あるタブでのマーカー変更を、他の全タブのcontent scriptへ中継する
 //      （chrome.runtime.sendMessageは他タブのcontent scriptには届かないため）
 // ==========================================================
 
-const ICHNITE_API_BASE = "http://localhost:8000";
+importScripts("modules/dataStore.js", "modules/aiService.js");
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "ichnite:open-marker-book") {
@@ -29,36 +34,45 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return;
   }
 
-  if (message?.type === "ichnite:api") {
-    // 通常のWebページ上で動くコンテンツスクリプトが直接localhostへfetchすると
-    // ChromeのPrivate Network Accessによりブロックされ、開発者向けフラグ付き起動が必要になる。
-    // 拡張機能自身（バックグラウンド）はhost_permissionsにより制限を受けないため、ここで代行する。
-    callIchniteApi(message)
-      .then(sendResponse)
+  if (message?.type === "ichnite:data") {
+    handleDataAction(message.action, message.payload)
+      .then((data) => sendResponse({ ok: true, data }))
       .catch((error) => sendResponse({ ok: false, error: error.message }));
     return true; // sendResponseを非同期で呼ぶために必要
   }
 });
 
 
-async function callIchniteApi({ path, method = "GET", body }) {
-  const res = await fetch(`${ICHNITE_API_BASE}${path}`, {
-    method,
-    headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
-  const text = await res.text();
-  let data = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
+// modules/dataStore.js・modules/aiService.js の関数へディスパッチする窓口。
+// content script・拡張ページ側は必ずこのactionの形でメッセージを送る
+// （storage.js の ichniteDataRequest 参照）。
+async function handleDataAction(action, payload = {}) {
+  switch (action) {
+    case "saveMarker":
+      return await dsSaveMarker(payload);
+    case "fetchAllMarkers":
+      return await dsFetchAllMarkers();
+    case "fetchMarkersForPage":
+      return await dsFetchMarkersForPage(payload.pageUrl);
+    case "fetchMarkerBookEntries":
+      return await dsFetchMarkerBookEntries();
+    case "deleteMarker":
+      return await dsDeleteMarker(payload.markerId);
+    case "saveMarkerMemo":
+      return await dsSaveMarkerMemo(payload.markerId, payload.memo);
+    case "fetchAiNote":
+      return await dsFetchAiNote(payload.markerId);
+    case "generateAiNote": {
+      const aiResult = await generateAiNoteViaOpenAi(payload.selectedText);
+      return await dsSaveAiNote(payload.markerId, aiResult);
     }
+    case "getSettings":
+      return await dsGetSettings();
+    case "saveSettings":
+      return await dsSaveSettings(payload);
+    default:
+      throw new Error(`unknown action: ${action}`);
   }
-
-  return { ok: res.ok, status: res.status, data };
 }
 
 

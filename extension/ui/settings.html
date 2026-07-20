@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定 - Ichnite</title>
+  <link rel="icon" href="../icons/icon_maincolor.png">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+<div class="container">
+
+  <header class="site-header">
+    <a class="site-logo" href="marker_book.html">
+      <img src="../icons/icon_maincolor.png" alt="" class="site-logo-icon" />
+      Ichnite
+    </a>
+    <a class="back-link" href="marker_book.html">← 記録帳に戻る</a>
+  </header>
+
+  <main class="main-content">
+    <div class="settings-card">
+      <h1 class="settings-title">設定</h1>
+      <p class="settings-lead">
+        Ichniteはバックエンドサーバーを持たず、この拡張機能だけで完結します。
+        マーカーの記録・記録帳などのコア機能はこのままお使いいただけます。
+      </p>
+
+      <div class="field">
+        <label for="api-key-input">OpenAI APIキー（任意）</label>
+        <p class="field-hint">
+          設定すると、マーカーのAI解説（意味・類似語・対義語・例文）が生成されるようになります。
+          未設定でも他の機能はすべて動作します。
+        </p>
+        <div class="input-row">
+          <input type="password" id="api-key-input" placeholder="sk-..." autocomplete="off" spellcheck="false">
+          <button type="button" class="btn" id="toggle-visibility-btn">表示</button>
+        </div>
+        <p class="field-hint">
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAIのサイトでAPIキーを取得</a>
+        </p>
+      </div>
+
+      <div class="settings-footer">
+        <span class="save-status" id="save-status" hidden>保存しました</span>
+        <button type="button" class="btn primary" id="save-btn">保存</button>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="settings.js"></script>
+</body>
+</html>

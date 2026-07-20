@@ -5,11 +5,10 @@
 
    記録帳の一覧（marker_book.js）で「表示」を押すと
    marker_detail.html?id=<marker_id> にこのタブ内で遷移してくる。
-   独立した拡張機能ページなので、marker_book.jsと同様にAPI呼び出し等を
+   独立した拡張機能ページなので、marker_book.jsと同様にデータ取得等を
    自前で持っている（modules/storage.jsとは別コンテキスト）。
+   データの実体はbackground.js経由のchrome.storage.local（バックエンド不要）。
    ============================================= */
-
-const API_BASE = "http://localhost:8000";
 
 const COLOR_LABEL = {
   yellow: "黄",
@@ -43,6 +42,20 @@ const btnRegenerateAi   = document.getElementById("btn-regenerate-ai");
 
 let marker = null;
 let allEntries = [];
+
+// background.js（chrome.storage.local）へのデータ要求。
+// modules/storage.js の ichniteDataRequest と同じ形の呼び出し方だが、
+// このページはcontent scriptとは別の実行コンテキストのため自前で定義する。
+async function ichniteDataRequest(action, payload) {
+  const response = await chrome.runtime.sendMessage({
+    type: "ichnite:data",
+    action,
+    payload,
+  });
+  if (!response) throw new Error("拡張機能のバックグラウンドと通信できませんでした");
+  if (!response.ok) throw new Error(response.error || "不明なエラーが発生しました");
+  return response.data;
+}
 
 // サイドパネルなど他コンテキストへマーカーの変更を通知する
 function notifyMarkersUpdated(extra = {}) {
@@ -105,10 +118,7 @@ async function loadMarker() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/marker_book/full`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
+    const data = await ichniteDataRequest("fetchMarkerBookEntries");
     allEntries = data;
     const entry = data.find(item => item.marker_id === markerId);
 
@@ -233,7 +243,7 @@ btnEdit.addEventListener("click", () => {
       notifyMarkersUpdated();
     } catch (error) {
       console.log("メモ保存失敗:", error);
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }
@@ -241,13 +251,7 @@ btnEdit.addEventListener("click", () => {
 });
 
 async function saveMemo(id, memo) {
-  const res = await fetch(`${API_BASE}/marker_book/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memo }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+  return await ichniteDataRequest("saveMarkerMemo", { markerId: id, memo });
 }
 
 // ── AI解説の生成／再生成 ────────────────────────
@@ -257,13 +261,10 @@ btnRegenerateAi.addEventListener("click", async () => {
   btnRegenerateAi.textContent = "生成中...";
 
   try {
-    const res = await fetch(`${API_BASE}/ai_notes/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ marker_id: marker.id, selected_text: marker.word }),
+    const aiNote = await ichniteDataRequest("generateAiNote", {
+      markerId: marker.id,
+      selectedText: marker.word,
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const aiNote = await res.json();
 
     marker.explanation = aiNote.explanation || "";
     marker.similarWords = aiNote.similar_words || "";
@@ -274,7 +275,7 @@ btnRegenerateAi.addEventListener("click", async () => {
     notifyMarkersUpdated();
   } catch (error) {
     console.log("AI解説生成失敗:", error);
-    alert("AI解説の生成に失敗しました。バックエンドのOPENAI_API_KEY設定を確認してください。");
+    alert(`AI解説の生成に失敗しました。\n${error.message}`);
     btnRegenerateAi.disabled = false;
     btnRegenerateAi.textContent = original;
   }
@@ -286,14 +287,13 @@ btnDelete.addEventListener("click", async () => {
   if (!confirm(`「${marker.word}」を削除しますか？\nこの操作は取り消せません。`)) return;
 
   try {
-    const res = await fetch(`${API_BASE}/markers/${marker.id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await ichniteDataRequest("deleteMarker", { markerId: marker.id });
 
     notifyMarkersUpdated({ deletedMarkerId: marker.id });
     window.location.href = "marker_book.html";
   } catch (error) {
     console.log("削除失敗:", error);
-    alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
+    alert(`削除に失敗しました。\n${error.message}`);
   }
 });
 

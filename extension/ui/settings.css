@@ -1,0 +1,186 @@
+/* ===== Reset ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Base ===== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: #f7f8fa;
+  color: #1a1a2e;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ===== Header ===== */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.site-logo:hover {
+  color: #b8790f;
+}
+
+.site-logo-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.back-link {
+  font-size: 12.5px;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: #a36b00;
+  text-decoration: underline;
+}
+
+/* ===== Settings card ===== */
+.settings-card {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-top: 4px solid #fbb61d;
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.settings-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+.settings-lead {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* ===== Field ===== */
+.field {
+  margin-bottom: 24px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+.field-hint a {
+  color: #a36b00;
+}
+
+.field-hint a:hover {
+  text-decoration: underline;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #374151;
+}
+
+.input-row input:focus {
+  outline: none;
+  border-color: #fbb61d;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  transition: background 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn.primary {
+  background: #fbb61d;
+  border-color: #fbb61d;
+  color: #1a1a2e;
+}
+
+.btn.primary:hover {
+  background: #e5a417;
+  border-color: #e5a417;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ===== Footer ===== */
+.settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.save-status {
+  font-size: 12.5px;
+  color: #4caf50;
+  font-weight: 600;
+}
