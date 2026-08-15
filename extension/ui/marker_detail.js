@@ -5,11 +5,9 @@
 
    記録帳の一覧（marker_book.js）で「表示」を押すと
    marker_detail.html?id=<marker_id> にこのタブ内で遷移してくる。
-   独立した拡張機能ページなので、marker_book.jsと同様にAPI呼び出し等を
-   自前で持っている（modules/storage.jsとは別コンテキスト）。
+   独立した拡張機能ページなので、marker_book.jsと同様にmodules/dataClient.js
+   経由でbackground.jsに問い合わせる（modules/storage.jsとは別コンテキスト）。
    ============================================= */
-
-const API_BASE = "http://localhost:8000";
 
 const COLOR_LABEL = {
   yellow: "黄",
@@ -42,6 +40,7 @@ const btnDelete         = document.getElementById("btn-delete");
 const btnRegenerateAi   = document.getElementById("btn-regenerate-ai");
 
 let marker = null;
+let allEntries = [];
 
 // サイドパネルなど他コンテキストへマーカーの変更を通知する
 function notifyMarkersUpdated(extra = {}) {
@@ -65,6 +64,37 @@ function shortenUrl(url) {
   }
 }
 
+// text内に、自分以外の登録済みマーカーの単語が含まれていれば、その単語詳細ページへのリンクに変換する
+function linkifyRegisteredWords(text, currentMarkerId) {
+  const escaped = escapeHtml(text || "");
+  if (!escaped) return escaped;
+
+  // 同じ単語が複数登録されていても最初の1件だけを採用し、長い単語ほど優先してマッチさせる
+  // （例："good"と"good idea"が両方登録されていた場合、"good idea"を先にリンク化する）
+  const seenWords = new Set();
+  const candidates = [];
+  for (const entry of allEntries) {
+    if (entry.marker_id === currentMarkerId) continue;
+    const word = (entry.selected_text || "").trim();
+    if (!word || seenWords.has(word)) continue;
+    seenWords.add(word);
+    candidates.push({ id: entry.marker_id, escapedWord: escapeHtml(word) });
+  }
+  if (candidates.length === 0) return escaped;
+
+  candidates.sort((a, b) => b.escapedWord.length - a.escapedWord.length);
+
+  const idByEscapedWord = new Map(candidates.map(c => [c.escapedWord, c.id]));
+  const pattern = candidates
+    .map(c => c.escapedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+
+  return escaped.replace(new RegExp(`(${pattern})`, "g"), (match) => {
+    const id = idByEscapedWord.get(match);
+    return `<a href="marker_detail.html?id=${id}" class="linked-word">${match}</a>`;
+  });
+}
+
 // ── データ取得 ──────────────────────────────────
 async function loadMarker() {
   if (!markerId) {
@@ -73,10 +103,8 @@ async function loadMarker() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/marker_book/full`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
+    const data = await ichniteDataRequest("fetchMarkerBookEntries");
+    allEntries = data;
     const entry = data.find(item => item.marker_id === markerId);
 
     if (!entry) {
@@ -128,7 +156,11 @@ function renderMarker() {
 
   renderMemo();
 
-  explanationView.textContent = marker.explanation || "まだ生成されていません";
+  if (marker.explanation) {
+    explanationView.innerHTML = linkifyRegisteredWords(marker.explanation, marker.id);
+  } else {
+    explanationView.textContent = "まだ生成されていません";
+  }
   explanationView.classList.toggle("empty", !marker.explanation);
   btnRegenerateAi.textContent = marker.explanation ? "再生成" : "生成";
 
@@ -147,7 +179,11 @@ function renderMarker() {
 }
 
 function renderMemo() {
-  memoView.textContent = marker.memo || "メモはまだありません";
+  if (marker.memo) {
+    memoView.innerHTML = linkifyRegisteredWords(marker.memo, marker.id);
+  } else {
+    memoView.textContent = "メモはまだありません";
+  }
   memoView.classList.toggle("empty", !marker.memo);
 }
 
@@ -192,7 +228,7 @@ btnEdit.addEventListener("click", () => {
       notifyMarkersUpdated();
     } catch (error) {
       console.log("メモ保存失敗:", error);
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }
@@ -200,13 +236,7 @@ btnEdit.addEventListener("click", () => {
 });
 
 async function saveMemo(id, memo) {
-  const res = await fetch(`${API_BASE}/marker_book/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memo }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+  return await ichniteDataRequest("saveMarkerMemo", { markerId: id, memo });
 }
 
 // ── AI解説の生成／再生成 ────────────────────────
@@ -216,13 +246,10 @@ btnRegenerateAi.addEventListener("click", async () => {
   btnRegenerateAi.textContent = "生成中...";
 
   try {
-    const res = await fetch(`${API_BASE}/ai_notes/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ marker_id: marker.id, selected_text: marker.word }),
+    const aiNote = await ichniteDataRequest("generateAiNote", {
+      markerId: marker.id,
+      selectedText: marker.word,
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const aiNote = await res.json();
 
     marker.explanation = aiNote.explanation || "";
     marker.similarWords = aiNote.similar_words || "";
@@ -233,7 +260,7 @@ btnRegenerateAi.addEventListener("click", async () => {
     notifyMarkersUpdated();
   } catch (error) {
     console.log("AI解説生成失敗:", error);
-    alert("AI解説の生成に失敗しました。バックエンドのOPENAI_API_KEY設定を確認してください。");
+    alert(`AI解説の生成に失敗しました。\n${error.message}`);
     btnRegenerateAi.disabled = false;
     btnRegenerateAi.textContent = original;
   }
@@ -245,14 +272,13 @@ btnDelete.addEventListener("click", async () => {
   if (!confirm(`「${marker.word}」を削除しますか？\nこの操作は取り消せません。`)) return;
 
   try {
-    const res = await fetch(`${API_BASE}/markers/${marker.id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await ichniteDataRequest("deleteMarker", { markerId: marker.id });
 
     notifyMarkersUpdated({ deletedMarkerId: marker.id });
     window.location.href = "marker_book.html";
   } catch (error) {
     console.log("削除失敗:", error);
-    alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
+    alert(`削除に失敗しました。\n${error.message}`);
   }
 });
 

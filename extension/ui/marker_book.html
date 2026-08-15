@@ -110,6 +110,13 @@
   <!-- Table -->
   <div class="table-wrapper">
     <table>
+      <colgroup>
+        <col style="width: 17%">
+        <col style="width: 30%">
+        <col style="width: 18%">
+        <col style="width: 12%">
+        <col style="width: 23%">
+      </colgroup>
       <thead>
         <tr>
           <th>言葉・フレーズ</th>
@@ -130,7 +137,7 @@
       <p>該当する記録が見つかりませんでした。</p>
     </div>
     <div class="error-state" id="error-state" hidden>
-      <p>取得できませんでした。バックエンド（<code>http://localhost:8000</code>）が起動しているか確認してください。</p>
+      <p>マーカーの取得に失敗しました。拡張機能を再読み込みしてから、もう一度お試しください。</p>
       <button class="btn" id="btn-retry">再読み込み</button>
     </div>
   </div>
@@ -142,6 +149,7 @@
   <div class="modal" id="modal-box"></div>
 </div>
 
+<script src="../modules/dataClient.js"></script>
 <script src="marker_book.js"></script>
 </body>
 </html>

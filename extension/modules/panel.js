@@ -48,7 +48,7 @@ function createSidePanel() {
       </div>
       <div id="ichnite-panel-header-actions">
         <button id="toggleMarkers" title="ページ上のマーカー表示を切り替え">マーカー: 表示</button>
-        <button id="toggleToolbar" title="文字選択時のカラー選択ポップアップを切り替え">カラー選択: 表示</button>
+        <button id="toggleToolbar" title="文字のポップアップ表示を切り替え">ポップアップ: 表示</button>
         <button id="openMarkerBook" title="マーカー記録帳を開く">記録帳</button>
       </div>
     </div>
@@ -87,9 +87,12 @@ function createSidePanel() {
   toggleToolbarBtn.onclick = () => {
     toolbarEnabled = !toolbarEnabled;
     ichniteToolbarEnabled = toolbarEnabled;
-    toggleToolbarBtn.textContent = toolbarEnabled ? "カラー選択: 表示" : "カラー選択: 非表示";
+    toggleToolbarBtn.textContent = toolbarEnabled ? "ポップアップ: 表示" : "ポップアップ: 非表示";
     toggleToolbarBtn.classList.toggle("is-off", !toolbarEnabled);
-    if (!toolbarEnabled) removeToolbar();
+    if (!toolbarEnabled) {
+      removeToolbar();
+      removeMemoPopup();
+    }
   };
 
   // 現在のページのマーカーだけに絞り込む
@@ -98,7 +101,7 @@ function createSidePanel() {
   // フローティングボタン（初期状態はこちらを表示する）
   const floatingButton = document.createElement("div");
   floatingButton.id = "ichnite-floating-button";
-  floatingButton.innerHTML = "☰";
+  floatingButton.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon_white.png")}" alt="" id="ichnite-floating-icon" />`;
   root.appendChild(floatingButton);
 
   // 閉じる
@@ -140,6 +143,27 @@ function createSidePanel() {
     floatingButton.style.display = "none";
     loadMarkerList();  // パネルを開くたびに最新を取得
   });
+
+  // サイドパネル自体のドラッグ移動（フローティングボタンと同じ仕組み）。
+  // ヘッダーのボタン（閉じる／マーカー切替等）の上から始めた場合はドラッグにせず、通常のクリックとして扱う。
+  const panelHeader = root.getElementById("ichnite-panel-header");
+  let isPanelDragging = false;
+  let panelOffsetX = 0, panelOffsetY = 0;
+
+  panelHeader.addEventListener("mousedown", (event) => {
+    if (event.target.closest("button")) return;
+    isPanelDragging = true;
+    panelOffsetX = event.clientX - panel.offsetLeft;
+    panelOffsetY = event.clientY - panel.offsetTop;
+  });
+
+  document.addEventListener("mousemove", (event) => {
+    if (!isPanelDragging) return;
+    panel.style.left = `${event.clientX - panelOffsetX}px`;
+    panel.style.top = `${event.clientY - panelOffsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => { isPanelDragging = false; });
 }
 
 
@@ -220,7 +244,7 @@ function createMarkerListItem(marker) {
       li.remove();
     } catch (error) {
       console.log("マーカー削除失敗:", error.message);
-      alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`マーカーの削除に失敗しました。\n${error.message}`);
     }
   });
 
@@ -263,7 +287,7 @@ function renderPanelMemoEdit(memoArea, memoBtn, marker) {
       notifyMarkersUpdated();
     } catch (error) {
       console.log("メモ保存失敗:", error.message);
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }
@@ -277,7 +301,8 @@ function goToMarker(marker) {
     try {
       const target = new URL(marker.page_url);
       target.searchParams.set("ichniteMarkerId", marker.marker_id);
-      window.location.href = target.toString();
+      // 現在のタブを奪わないよう、別タブで開く（background.js経由。content scriptはchrome.tabsを直接使えない）
+      chrome.runtime.sendMessage({ type: "ichnite:open-tab", url: target.toString() });
     } catch (error) {
       console.log("遷移先URLの解析に失敗:", error.message);
     }
