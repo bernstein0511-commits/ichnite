@@ -3,30 +3,25 @@
   "name": "Ichnite",
   "version": "2.0.0",
   "description": "読解の足跡を残すマーカーツール",
-
   "permissions": [
     "activeTab",
     "storage",
     "unlimitedStorage",
     "tabs"
   ],
-
   "host_permissions": [
     "<all_urls>",
     "https://api.openai.com/*"
   ],
-
   "background": {
     "service_worker": "background.js"
   },
-
   "icons": {
     "16": "icons/icon_maincolor.png",
     "32": "icons/icon_maincolor.png",
     "48": "icons/icon_maincolor.png",
     "128": "icons/icon_maincolor.png"
   },
-
   "action": {
     "default_popup": "ui/popup.html",
     "default_icon": {
@@ -36,7 +31,6 @@
       "128": "icons/icon_maincolor.png"
     }
   },
-
   "web_accessible_resources": [
     {
       "resources": [
@@ -58,13 +52,11 @@
       ]
     }
   ],
-
   "content_scripts": [
     {
       "matches": [
         "<all_urls>"
       ],
-
       "js": [
         "content/content.js",
         "modules/shadowHost.js",
@@ -75,7 +67,6 @@
         "modules/marker.js",
         "modules/panel.js"
       ],
-
       "css": [
         "content/content.css"
       ]

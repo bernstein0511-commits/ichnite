@@ -73,7 +73,7 @@ async function relayToOtherTabs(message, sourceTabId) {
   const tabs = await chrome.tabs.query({});
   for (const tab of tabs) {
     if (tab.id === undefined || tab.id === sourceTabId) continue;
-    chrome.tabs.sendMessage(tab.id, message).catch(() => {});
+    chrome.tabs.sendMessage(tab.id, message).catch(() => { });
   }
 }
 
