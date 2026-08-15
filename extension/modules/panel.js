@@ -244,7 +244,7 @@ function createMarkerListItem(marker) {
       li.remove();
     } catch (error) {
       console.log("マーカー削除失敗:", error.message);
-      alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`マーカーの削除に失敗しました。\n${error.message}`);
     }
   });
 
@@ -287,7 +287,7 @@ function renderPanelMemoEdit(memoArea, memoBtn, marker) {
       notifyMarkersUpdated();
     } catch (error) {
       console.log("メモ保存失敗:", error.message);
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }

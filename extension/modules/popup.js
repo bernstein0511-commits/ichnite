@@ -137,7 +137,7 @@ function renderMemoPopupView(popup, target) {
       await removeMarkerCompletely(target.dataset.markerId);
     } catch (error) {
       console.log("マーカー削除失敗:", error.message);
-      alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`マーカーの削除に失敗しました。\n${error.message}`);
     }
 
     removeMemoPopup();
@@ -179,7 +179,7 @@ function renderMemoPopupEdit(popup, target) {
       renderMemoPopupView(popup, target);
     } catch (error) {
       console.log("メモ保存失敗:", error.message);
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }
