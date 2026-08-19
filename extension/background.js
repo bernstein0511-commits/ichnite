@@ -84,6 +84,7 @@ async function openOrFocusMarkerBook() {
   const tabs = await chrome.tabs.query({ url: `${url}*` });
 
   if (tabs.length > 0) {
+    await chrome.tabs.reload(tabs[0].id);
     await chrome.tabs.update(tabs[0].id, { active: true });
     await chrome.windows.update(tabs[0].windowId, { focused: true });
   } else {
