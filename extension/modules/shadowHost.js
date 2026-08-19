@@ -1,8 +1,8 @@
 // ==========================================================
 // modules/shadowHost.js — 拡張機能のUI（サイドパネル・ツールバー・
 // メモポップアップ等）をShadow DOMに隔離し、閲覧中のページのCSSから
-// 影響を受けない/与えないようにする（content.css内document.documentElement
-// 直下に隠しdivを1つ作り、その中に閉じたスタイル空間を用意するイメージ）。
+// 影響を受けない/与えないようにする（document.body直下に隠しdivを1つ作り、
+// その中に閉じたスタイル空間を用意するイメージ）。
 //
 // getIchniteRoot() が唯一の入り口。marker.js・popup.js・panel.js は
 // 自前のUI要素を作る際、必ずこの戻り値（ShadowRoot）に対して
@@ -17,7 +17,12 @@ function getIchniteRoot() {
 
   const host = document.createElement("div");
   host.id = ICHNITE_HOST_ID;
-  document.documentElement.appendChild(host);
+  // documentElement（<html>）直下ではなくbody直下に挿入する。
+  // <html>にdisplay:flex/grid等のレイアウトを適用しているサイトだと、
+  // <html>の子要素はbodyだけのはずが、この見えないホストdivも兄弟として
+  // レイアウトに参加してしまい、横幅をbodyと分け合って狭くなる事故になる
+  // （例：ピクシブ百科事典を開くとウィンドウの横幅が短くなる現象）。
+  document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "open" });
 

@@ -106,6 +106,10 @@ async function addMarker(event) {
     // サイドパネル（同一タブ）と記録帳ページ（別タブ）へ即時反映
     loadMarkerList();
     notifyMarkersUpdated();
+
+    // 同じページ・同じ単語・同じ色の既存ハイライトがあれば、今回の追加で
+    // 番号（1件目/2件目...）がずれるので、ページ上の全ハイライトを再計算する
+    refreshDuplicateNumbersOnPage();
   } catch (error) {
     console.log("マーカー保存失敗:", error.message);
   }
@@ -154,5 +158,13 @@ function unwrapHighlightById(markerId) {
 async function removeMarkerCompletely(markerId) {
   await deleteMarker(markerId);
   unwrapHighlightById(markerId);
+
+  // サイドパネル（同一タブ）と記録帳ページ（別タブ）へ即時反映。
+  // notifyMarkersUpdated()だけだと同一タブのパネル一覧が即座に更新されない
+  // ケースがあったため、addMarker()と同様にここでも直接呼んでおく。
+  loadMarkerList();
   notifyMarkersUpdated({ deletedMarkerId: markerId });
+
+  // 削除で残りの同じ単語・同じ色のハイライトの番号がずれる可能性があるため再計算する
+  refreshDuplicateNumbersOnPage();
 }

@@ -12,9 +12,12 @@ async function restoreMarkers() {
     // 現在のページに紐づくマーカーだけを取得する
     const pageMarkers = await fetchMarkersForPage();
     const memoMap = await fetchMemoMapForCurrentPage();
+    // 同じページ・同じ単語・同じ色が複数あるものだけ、登場順の番号を割り当てる
+    // （ui/markerUtils.js。ホバー時のメモポップアップで表示するため）
+    const dupMap = computeDuplicateNumbers(pageMarkers);
 
     for (const marker of pageMarkers) {
-      await restoreSingleMarker(marker, memoMap.get(marker.marker_id) || "");
+      await restoreSingleMarker(marker, memoMap.get(marker.marker_id) || "", dupMap.get(marker.marker_id));
     }
 
     // サイドパネルの登録文字クリックで他ページから遷移してきた場合、対象位置までスクロール
@@ -41,6 +44,31 @@ async function fetchMemoMapForCurrentPage() {
 }
 
 
+// ページ上の全.ichnite-highlight要素に、最新の重複番号を反映し直す。
+// マーカーの新規作成・削除の直後は、同じページ・同じ単語・同じ色の他のハイライトの
+// 番号がずれる可能性がある（例：3件中2番目を消すと、3番目だったものが2番目になる）ため、
+// marker.js側から呼び出す。
+async function refreshDuplicateNumbersOnPage() {
+  try {
+    const pageMarkers = await fetchMarkersForPage();
+    const dupMap = computeDuplicateNumbers(pageMarkers);
+
+    document.querySelectorAll(".ichnite-highlight[data-marker-id]").forEach((el) => {
+      const dup = dupMap.get(Number(el.dataset.markerId));
+      if (dup) {
+        el.dataset.dupIndex = dup.index;
+        el.dataset.dupTotal = dup.total;
+      } else {
+        delete el.dataset.dupIndex;
+        delete el.dataset.dupTotal;
+      }
+    });
+  } catch (error) {
+    console.log("重複番号の更新に失敗:", error.message);
+  }
+}
+
+
 function scrollToRequestedMarker() {
   if (!ichniteRequestedMarkerId) return;
 
@@ -53,7 +81,7 @@ function scrollToRequestedMarker() {
 }
 
 
-async function restoreSingleMarker(marker, memo = "") {
+async function restoreSingleMarker(marker, memo = "", dup = null) {
   const targetText = marker.selected_text;
   const color = marker.color;
   const markerId = marker.marker_id;
@@ -75,6 +103,10 @@ async function restoreSingleMarker(marker, memo = "") {
   markerEl.dataset.markerId = markerId;
   markerEl.dataset.aiLoaded = "false";
   markerEl.dataset.memo = memo;
+  if (dup) {
+    markerEl.dataset.dupIndex = dup.index;
+    markerEl.dataset.dupTotal = dup.total;
+  }
 
   try {
     range.surroundContents(markerEl);

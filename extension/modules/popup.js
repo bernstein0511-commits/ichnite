@@ -117,7 +117,14 @@ function renderMemoPopupView(popup, target) {
   const memo = target.dataset.memo || "";
   const hasMemo = memo.trim() !== "";
 
+  // 同じページ・同じ単語・同じ色のハイライトが複数あるときだけ、登場順の番号を出す
+  const dupIndex = target.dataset.dupIndex;
+  const dupHtml = dupIndex
+    ? `<div class="ichnite-memo-dup" title="このページ内で同じ単語・同じ色が${target.dataset.dupTotal}件あるうちの${dupIndex}番目">${dupIndex}</div>`
+    : "";
+
   popup.innerHTML = `
+    ${dupHtml}
     ${hasMemo
       ? `<div class="ichnite-memo-text">${escapeIchniteHtml(memo)}</div>`
       : `<div class="ichnite-memo-empty">メモなし</div>`
@@ -175,6 +182,9 @@ function renderMemoPopupEdit(popup, target) {
     try {
       await saveMarkerMemo(target.dataset.markerId, newMemo);
       target.dataset.memo = newMemo;
+      // 同一タブのサイドパネル一覧にも即座に反映する（notifyMarkersUpdated()経由の
+      // メッセージ通知だけでは同一タブに反映されないことがあったため）
+      loadMarkerList();
       notifyMarkersUpdated();
       renderMemoPopupView(popup, target);
     } catch (error) {

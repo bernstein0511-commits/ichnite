@@ -45,7 +45,9 @@ const errorState     = document.getElementById("error-state");
 const statusBar      = document.getElementById("status-bar");
 const filterPage     = document.getElementById("filter-page");
 const filterColor    = document.getElementById("filter-color");
+const filterTag      = document.getElementById("filter-tag");
 const filterPeriod   = document.getElementById("filter-period");
+const filterSort     = document.getElementById("filter-sort");
 const filterKeyword  = document.getElementById("filter-keyword");
 const modalOverlay   = document.getElementById("modal-overlay");
 const modalBox       = document.getElementById("modal-box");
@@ -64,12 +66,14 @@ async function loadMarkerBook() {
 
   try {
     const data = await ichniteDataRequest("fetchMarkerBookEntries");
+    const dupMap = computeDuplicateNumbers(data);
 
     markers = data.map(item => ({
       id: item.marker_id,
       word: item.selected_text,
       color: item.color,
       memo: item.memo || "",
+      tags: item.tags || [],
       explanation: item.explanation || "",
       similarWords: item.similar_words || "",
       antonyms: item.antonyms || "",
@@ -78,6 +82,8 @@ async function loadMarkerBook() {
       pageUrl: item.page_url,
       pageTitle: item.page_title || item.page_url,
       createdAt: item.created_at,
+      // 同じページ・同じ単語・同じ色のマーカーが複数ある場合のみ、登場順の番号が入る
+      dup: dupMap.get(item.marker_id) || null,
     }));
 
     populateSelects();
@@ -115,9 +121,11 @@ function showStatus(message, isError) {
 function populateSelects() {
   const currentPage = filterPage.value;
   const currentColor = filterColor.value;
+  const currentTag = filterTag.value;
 
   const pages = [...new Set(markers.map(m => m.pageTitle))];
   const colors = [...new Set(markers.map(m => m.color))];
+  const tags = collectAllTags(markers);
 
   filterPage.innerHTML = '<option value="">すべてのページ</option>';
   pages.forEach(p => {
@@ -135,12 +143,23 @@ function populateSelects() {
     filterColor.appendChild(opt);
   });
 
+  filterTag.innerHTML = '<option value="">すべてのタグ</option>';
+  tags.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    filterTag.appendChild(opt);
+  });
+
   // 再読み込み後も選択状態を維持する
   if ([...filterPage.options].some(o => o.value === currentPage)) {
     filterPage.value = currentPage;
   }
   if ([...filterColor.options].some(o => o.value === currentColor)) {
     filterColor.value = currentColor;
+  }
+  if ([...filterTag.options].some(o => o.value === currentTag)) {
+    filterTag.value = currentTag;
   }
 }
 
@@ -157,11 +176,22 @@ function createRow(m) {
     ? escapeHtml(m.explanation)
     : "（AI解説は未生成です）";
 
+  const tagsHtml = m.tags.length
+    ? `<div class="cell-tags">${m.tags.map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join("")}</div>`
+    : "";
+
+  // 同じページに同じ単語・同じ色のマーカーが複数あるときだけ、ページ上の登場順の番号を出す
+  const dupBadgeHtml = m.dup
+    ? `<span class="dup-number" title="このページ内で同じ単語・同じ色が${m.dup.total}件あるうちの${m.dup.index}番目">${m.dup.index}</span>`
+    : "";
+
   tr.innerHTML = `
     <td class="cell-word">
       <div class="word-badge ${escapeHtml(m.color)}">
         <span class="word-name">${escapeHtml(m.word)}</span>
+        ${dupBadgeHtml}
       </div>
+      ${tagsHtml}
     </td>
     <td class="cell-memo">
       <div class="memo-desc${m.explanation ? "" : " empty"}">${explanationHtml}</div>
@@ -211,6 +241,7 @@ function renderTable(list) {
 function applyFilters() {
   const page    = filterPage.value;
   const color   = filterColor.value;
+  const tag     = filterTag.value;
   const period  = parseInt(filterPeriod.value, 10);
   const keyword = filterKeyword.value.trim().toLowerCase();
 
@@ -219,6 +250,7 @@ function applyFilters() {
   const filtered = markers.filter(m => {
     if (page && m.pageTitle !== page) return false;
     if (color && m.color !== color) return false;
+    if (tag && !m.tags.includes(tag)) return false;
 
     if (period) {
       const recordDate = new Date(m.createdAt);
@@ -228,24 +260,61 @@ function applyFilters() {
 
     if (keyword) {
       const haystack = [m.word, m.explanation, m.memo, m.similarWords,
-        m.antonyms, m.usageExample, m.pageTitle].join(" ").toLowerCase();
+        m.antonyms, m.usageExample, m.pageTitle, m.tags.join(" ")].join(" ").toLowerCase();
       if (!haystack.includes(keyword)) return false;
     }
 
     return true;
   });
 
-  renderTable(filtered);
+  renderTable(sortMarkers(filtered, filterSort.value));
+}
+
+// ── 並び替え ────────────────────────────────────
+// 色順のときの並び順（ツールバーの色スウォッチと同じ並び）
+const COLOR_ORDER = ["yellow", "green", "blue", "red", "purple"];
+
+function sortMarkers(list, sortKey) {
+  const sorted = [...list];
+
+  switch (sortKey) {
+    case "created_asc":
+      sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      break;
+    case "word_asc":
+      sorted.sort((a, b) => a.word.localeCompare(b.word, "ja"));
+      break;
+    case "word_desc":
+      sorted.sort((a, b) => b.word.localeCompare(a.word, "ja"));
+      break;
+    case "page_asc":
+      sorted.sort((a, b) => (a.pageTitle || "").localeCompare(b.pageTitle || "", "ja"));
+      break;
+    case "color":
+      sorted.sort((a, b) => COLOR_ORDER.indexOf(a.color) - COLOR_ORDER.indexOf(b.color));
+      break;
+    case "created_desc":
+    default:
+      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      break;
+  }
+
+  return sorted;
 }
 
 // ── メモ編集モーダル ────────────────────────────
-function openEditModal(m) {
+async function openEditModal(m) {
   modalBox.innerHTML = `
     <div class="modal-header">
-      <div class="modal-title">「${escapeHtml(m.word)}」のメモを編集</div>
+      <div class="modal-title">「${escapeHtml(m.word)}」を編集</div>
       <button class="modal-close" id="modal-close-btn">×</button>
     </div>
     <div class="modal-section">
+      <label class="modal-label" for="tags-editor-modal">タグ</label>
+      <div id="tags-editor-modal"></div>
+    </div>
+    <div class="modal-section">
+      <label class="modal-label" for="memo-textarea">メモ</label>
       <textarea id="memo-textarea" placeholder="気づいたことや覚えておきたいことをメモしましょう">${escapeHtml(m.memo)}</textarea>
     </div>
     <div class="modal-footer">
@@ -256,6 +325,44 @@ function openEditModal(m) {
   `;
 
   showModal();
+
+  // タグは保存ボタンを介さず、追加・削除のたびに即座に保存する（Google Keepのラベルと同じ挙動）。
+  // 候補一覧(allTags)は絞り込みバーの「すべてのタグ」（今使われているタグだけ）とは別物で、
+  // 一度でも使われたタグの永続候補プール（fetchKnownTags）を使う。
+  let knownTags = [];
+  try {
+    knownTags = await ichniteDataRequest("fetchKnownTags");
+  } catch (error) {
+    console.log("タグ候補の取得に失敗:", error);
+  }
+
+  createTagEditor({
+    container: modalBox.querySelector("#tags-editor-modal"),
+    tags: m.tags,
+    allTags: sortTagsByUsage(knownTags, markers),
+    onChange: async (newTags) => {
+      const previous = m.tags;
+      m.tags = newTags;
+      try {
+        await ichniteDataRequest("saveMarkerTags", { markerId: m.id, tags: newTags });
+        populateSelects();
+        applyFilters();
+        notifyMarkersUpdated();
+      } catch (error) {
+        console.log("タグの保存に失敗:", error);
+        alert(`タグの保存に失敗しました。\n${error.message}`);
+        m.tags = previous;
+      }
+    },
+    onDeleteCandidate: async (tag) => {
+      try {
+        await ichniteDataRequest("deleteKnownTag", { tag });
+      } catch (error) {
+        console.log("タグ候補の削除に失敗:", error);
+        alert(`タグ候補の削除に失敗しました。\n${error.message}`);
+      }
+    },
+  });
 
   const textarea = modalBox.querySelector("#memo-textarea");
   textarea.focus();
@@ -514,7 +621,9 @@ function renderColorBreakdown(list) {
 // ── イベントリスナー登録 ────────────────────────
 filterPage.addEventListener("change", applyFilters);
 filterColor.addEventListener("change", applyFilters);
+filterTag.addEventListener("change", applyFilters);
 filterPeriod.addEventListener("change", applyFilters);
+filterSort.addEventListener("change", applyFilters);
 filterKeyword.addEventListener("input", applyFilters);
 
 document.getElementById("btn-search").addEventListener("click", () => {

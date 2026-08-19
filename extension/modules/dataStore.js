@@ -9,6 +9,9 @@
 
 const MARKERS_KEY = "ichnite_markers";
 const SETTINGS_KEY = "ichnite_settings";
+// タグ入力UIの候補一覧。マーカーのtagsとは別に持ち、一度作ったタグは
+// 使っているマーカーが無くなっても消えないようにする（明示的な削除のみで消える）。
+const KNOWN_TAGS_KEY = "ichnite_known_tags";
 
 async function getMarkers() {
   const stored = await chrome.storage.local.get(MARKERS_KEY);
@@ -46,6 +49,7 @@ async function dsSaveMarker({ page_url, page_title, selected_text, color, positi
     usage_example: null,
     translation: null,
     memo: null,
+    tags: [],
   });
 
   await setMarkers(markers);
@@ -85,6 +89,87 @@ async function dsSaveMarkerMemo(markerId, memo) {
   return marker;
 }
 
+// タグを丸ごと置き換える（追加・削除どちらもここに集約。呼び出し側で配列を組み立てて渡す）。
+// 空文字は捨て、大文字小文字を区別せず重複除去してから保存する
+// （"Idiom"と"idiom"を別タグとして増やし続けるのを防ぐため）。
+async function dsSaveMarkerTags(markerId, tags) {
+  const markers = await getMarkers();
+  const marker = markers.find((m) => m.marker_id === markerId);
+  if (!marker) throw new Error("そのマーカーは見つかりませんでした");
+
+  const seen = new Set();
+  const normalized = [];
+  for (const raw of tags || []) {
+    const tag = String(raw ?? "").trim();
+    if (!tag) continue;
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalized.push(tag);
+  }
+
+  marker.tags = normalized;
+  await setMarkers(markers);
+
+  // 新しく使ったタグは候補一覧(ichnite_known_tags)にも記録する。
+  // このマーカーから後で外れても候補からは消えない（消すにはdsDeleteKnownTagを明示的に呼ぶ）。
+  const known = await getKnownTags();
+  await setKnownTags(mergeKnownTags(known, normalized));
+
+  return marker;
+}
+
+async function getKnownTags() {
+  const stored = await chrome.storage.local.get(KNOWN_TAGS_KEY);
+  return stored[KNOWN_TAGS_KEY] || [];
+}
+
+async function setKnownTags(tags) {
+  await chrome.storage.local.set({ [KNOWN_TAGS_KEY]: tags });
+}
+
+// 大文字小文字を区別せず重複を除きつつ、既存の並び順を保ったまま新しいタグを追加する
+function mergeKnownTags(known, newTags) {
+  const seen = new Set(known.map((t) => t.toLowerCase()));
+  const merged = [...known];
+  for (const tag of newTags) {
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(tag);
+  }
+  return merged;
+}
+
+// タグ入力UIの候補一覧を返す。dsSaveMarkerTagsを経由していない古いデータ等でも
+// 取りこぼしが無いよう、実際に使われているタグを毎回マージしてから返す
+// （候補から消したタグまで復活することはない。あくまで「現在使われているのに
+// 候補に無い」ものだけを補う一方向の同期）。
+async function dsFetchKnownTags() {
+  const [known, markers] = await Promise.all([getKnownTags(), getMarkers()]);
+
+  const inUse = [];
+  for (const m of markers) {
+    for (const tag of m.tags || []) inUse.push(tag);
+  }
+
+  const merged = mergeKnownTags(known, inUse);
+  if (merged.length !== known.length) {
+    await setKnownTags(merged);
+  }
+  return merged;
+}
+
+// タグ候補を完全に削除する（この操作でのみ候補から消える）。
+// 既にこのタグを持っているマーカー側のtagsはそのまま残す（履歴として保持）。
+async function dsDeleteKnownTag(tag) {
+  const known = await getKnownTags();
+  const key = String(tag ?? "").trim().toLowerCase();
+  const remaining = known.filter((t) => t.toLowerCase() !== key);
+  await setKnownTags(remaining);
+  return remaining;
+}
+
 async function dsFetchAiNote(markerId) {
   const markers = await getMarkers();
   const marker = markers.find((m) => m.marker_id === markerId);
@@ -118,7 +203,16 @@ async function dsSaveAiNote(markerId, note) {
 
 async function dsGetSettings() {
   const stored = await chrome.storage.local.get(SETTINGS_KEY);
-  return stored[SETTINGS_KEY] || { openaiApiKey: "" };
+  // markersVisible/popupEnabled/floatingButtonPos は全タブ共通のUI設定
+  // （サイドパネルの表示切り替え・フローティングボタンの位置）。
+  // タブごとに独立させず、ここに保存して他タブと同期させる（modules/panel.js参照）。
+  return {
+    openaiApiKey: "",
+    markersVisible: true,
+    popupEnabled: true,
+    floatingButtonPos: null,
+    ...(stored[SETTINGS_KEY] || {}),
+  };
 }
 
 async function dsSaveSettings(patch) {

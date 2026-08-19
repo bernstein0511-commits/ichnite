@@ -26,9 +26,11 @@ const errorState     = document.getElementById("error-state");
 
 const wordText        = document.getElementById("word-text");
 const wordBadge       = document.getElementById("word-badge");
+const wordDup         = document.getElementById("word-dup");
 const recordDate      = document.getElementById("record-date");
 const rowMemo         = document.getElementById("row-memo");
 const memoView        = document.getElementById("memo-view");
+const tagsEditor      = document.getElementById("tags-editor");
 const explanationView = document.getElementById("explanation-view");
 const usageView       = document.getElementById("usage-view");
 const similarView     = document.getElementById("similar-view");
@@ -112,11 +114,15 @@ async function loadMarker() {
       return;
     }
 
+    // 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ、登場順の番号が入る
+    const dup = computeDuplicateNumbers(data).get(entry.marker_id) || null;
+
     marker = {
       id: entry.marker_id,
       word: entry.selected_text,
       color: entry.color,
       memo: entry.memo || "",
+      tags: entry.tags || [],
       explanation: entry.explanation || "",
       similarWords: entry.similar_words || "",
       antonyms: entry.antonyms || "",
@@ -124,6 +130,7 @@ async function loadMarker() {
       pageUrl: entry.page_url,
       pageTitle: entry.page_title || entry.page_url,
       createdAt: entry.created_at,
+      dup,
     };
 
     renderMarker();
@@ -148,6 +155,16 @@ function renderMarker() {
   document.title = `${marker.word} - Ichnite`;
 
   wordText.textContent = marker.word;
+
+  // 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ、単語のすぐ後ろに番号を出す
+  if (marker.dup) {
+    wordDup.textContent = marker.dup.index;
+    wordDup.title = `このページ内で同じ単語・同じ色が${marker.dup.total}件あるうちの${marker.dup.index}番目`;
+    wordDup.hidden = false;
+  } else {
+    wordDup.hidden = true;
+  }
+
   wordBadge.innerHTML = `<span class="tag"><span class="color-dot ${marker.color}"></span>${COLOR_LABEL[marker.color] || marker.color}</span>`;
 
   const date = new Date(marker.createdAt);
@@ -155,6 +172,7 @@ function renderMarker() {
   recordDate.dateTime = date.toISOString();
 
   renderMemo();
+  renderTags();
 
   if (marker.explanation) {
     explanationView.innerHTML = linkifyRegisteredWords(marker.explanation, marker.id);
@@ -185,6 +203,48 @@ function renderMemo() {
     memoView.textContent = "メモはまだありません";
   }
   memoView.classList.toggle("empty", !marker.memo);
+}
+
+// タグ：Google Keepのラベルのような自由記述＋候補選択のUI（ui/tagInput.js）。
+// 保存ボタンは無く、追加・削除のたびに即座にchrome.storage.localへ反映する。
+// 候補一覧(allTags)は「今このマーカーが持っているタグ」ではなく、一度でも使われた
+// タグの永続的な候補プール（fetchKnownTags）。使わなくなっても候補からは消えず、
+// タグ入力UI上の×から明示的に削除するまで残り続ける。
+async function renderTags() {
+  let knownTags = [];
+  try {
+    knownTags = await ichniteDataRequest("fetchKnownTags");
+  } catch (error) {
+    console.log("タグ候補の取得に失敗:", error);
+  }
+
+  createTagEditor({
+    container: tagsEditor,
+    tags: marker.tags,
+    allTags: sortTagsByUsage(knownTags, allEntries),
+    onChange: async (newTags) => {
+      const previous = marker.tags;
+      marker.tags = newTags;
+      try {
+        await ichniteDataRequest("saveMarkerTags", { markerId: marker.id, tags: newTags });
+        notifyMarkersUpdated();
+      } catch (error) {
+        console.log("タグの保存に失敗:", error);
+        alert(`タグの保存に失敗しました。\n${error.message}`);
+        marker.tags = previous;
+        renderTags();
+      }
+    },
+    onDeleteCandidate: async (tag) => {
+      try {
+        await ichniteDataRequest("deleteKnownTag", { tag });
+      } catch (error) {
+        console.log("タグ候補の削除に失敗:", error);
+        alert(`タグ候補の削除に失敗しました。\n${error.message}`);
+        renderTags();
+      }
+    },
+  });
 }
 
 // ── メモのインライン編集 ────────────────────────

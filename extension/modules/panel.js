@@ -54,10 +54,15 @@ function createSidePanel() {
     </div>
     <div id="ichnite-panel-content">
       <div id="ichnite-filter-bar">
-        <label>
-          <input type="checkbox" id="filterCurrentPage" />
-          このページのみ表示
-        </label>
+        <button type="button" id="filterCurrentPageBtn" title="このページのマーカーだけに絞り込む">表示範囲: 全ページ</button>
+        <select id="panelSortSelect" title="並び替え">
+          <option value="created_desc">新しい順</option>
+          <option value="created_asc">古い順</option>
+          <option value="word_asc">あいうえお順</option>
+          <option value="word_desc">あいうえお逆順</option>
+          <option value="page_asc">元のページ順</option>
+          <option value="color">色順</option>
+        </select>
       </div>
       <p id="ichnite-loading">読み込み中...</p>
       <ul id="ichnite-marker-list"></ul>
@@ -71,38 +76,122 @@ function createSidePanel() {
     chrome.runtime.sendMessage({ type: "ichnite:open-marker-book" });
   };
 
-  // ページ上のマーカー表示/非表示を切り替える
+  // ページ上のマーカー表示/非表示・ポップアップ表示/非表示は、タブごとではなく
+  // 全タブ共通の設定として扱う（chrome.storage.localに保存し、他タブの変更は
+  // chrome.storage.onChangedで即座に反映する。保存先はdataStore.jsのdsGetSettings/dsSaveSettings）。
   let markersVisible = true;
-  const toggleMarkersBtn = root.getElementById("toggleMarkers");
-  toggleMarkersBtn.onclick = () => {
-    markersVisible = !markersVisible;
-    document.documentElement.classList.toggle("ichnite-markers-hidden", !markersVisible);
-    toggleMarkersBtn.textContent = markersVisible ? "マーカー: 表示" : "マーカー: 非表示";
-    toggleMarkersBtn.classList.toggle("is-off", !markersVisible);
-  };
-
-  // 文字選択時のカラー選択ポップアップ（ツールバー）表示/非表示を切り替える
   let toolbarEnabled = true;
+  const toggleMarkersBtn = root.getElementById("toggleMarkers");
   const toggleToolbarBtn = root.getElementById("toggleToolbar");
-  toggleToolbarBtn.onclick = () => {
-    toolbarEnabled = !toolbarEnabled;
-    ichniteToolbarEnabled = toolbarEnabled;
-    toggleToolbarBtn.textContent = toolbarEnabled ? "ポップアップ: 表示" : "ポップアップ: 非表示";
-    toggleToolbarBtn.classList.toggle("is-off", !toolbarEnabled);
-    if (!toolbarEnabled) {
+
+  function applyMarkersVisible(visible) {
+    markersVisible = visible;
+    document.documentElement.classList.toggle("ichnite-markers-hidden", !visible);
+    toggleMarkersBtn.textContent = visible ? "マーカー: 表示" : "マーカー: 非表示";
+    toggleMarkersBtn.classList.toggle("is-off", !visible);
+  }
+
+  function applyToolbarEnabled(enabled) {
+    toolbarEnabled = enabled;
+    ichniteToolbarEnabled = enabled;
+    toggleToolbarBtn.textContent = enabled ? "ポップアップ: 表示" : "ポップアップ: 非表示";
+    toggleToolbarBtn.classList.toggle("is-off", !enabled);
+    if (!enabled) {
       removeToolbar();
       removeMemoPopup();
     }
+  }
+
+  // 起動時に他タブと共通の設定を読み込んで反映する
+  ichniteDataRequest("getSettings").then((settings) => {
+    applyMarkersVisible(settings.markersVisible !== false);
+    applyToolbarEnabled(settings.popupEnabled !== false);
+    if (settings.floatingButtonPos) applyFloatingButtonPos(settings.floatingButtonPos);
+  }).catch((error) => {
+    console.log("設定の取得に失敗:", error.message);
+  });
+
+  toggleMarkersBtn.onclick = async () => {
+    const next = !markersVisible;
+    applyMarkersVisible(next);
+    try {
+      await ichniteDataRequest("saveSettings", { markersVisible: next });
+    } catch (error) {
+      console.log("設定の保存に失敗:", error.message);
+    }
   };
 
-  // 現在のページのマーカーだけに絞り込む
-  root.getElementById("filterCurrentPage").addEventListener("change", loadMarkerList);
+  toggleToolbarBtn.onclick = async () => {
+    const next = !toolbarEnabled;
+    applyToolbarEnabled(next);
+    try {
+      await ichniteDataRequest("saveSettings", { popupEnabled: next });
+    } catch (error) {
+      console.log("設定の保存に失敗:", error.message);
+    }
+  };
 
-  // フローティングボタン（初期状態はこちらを表示する）
+  // 他タブ・記録帳ページ等での切り替えを即座に反映する
+  // （content scriptからも chrome.storage.onChanged は直接購読できる）
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local" || !changes.ichnite_settings) return;
+    const newSettings = changes.ichnite_settings.newValue || {};
+    if (newSettings.markersVisible !== undefined && newSettings.markersVisible !== markersVisible) {
+      applyMarkersVisible(newSettings.markersVisible);
+    }
+    if (newSettings.popupEnabled !== undefined && newSettings.popupEnabled !== toolbarEnabled) {
+      applyToolbarEnabled(newSettings.popupEnabled);
+    }
+    if (newSettings.floatingButtonPos) {
+      applyFloatingButtonPos(newSettings.floatingButtonPos);
+    }
+  });
+
+  // 現在のページのマーカーだけに絞り込む（チェックボックスではなくトグルボタン）。
+  // loadMarkerList()はモジュール直下の関数でここのローカル変数は見えないため、
+  // 状態は（旧チェックボックスの.checkedと同じように）DOM側（classList）に持たせる。
+  const filterCurrentPageBtn = root.getElementById("filterCurrentPageBtn");
+  filterCurrentPageBtn.onclick = () => {
+    const next = !filterCurrentPageBtn.classList.contains("is-active");
+    filterCurrentPageBtn.classList.toggle("is-active", next);
+    filterCurrentPageBtn.textContent = next ? "表示範囲: このページ" : "表示範囲: 全ページ";
+    loadMarkerList();
+  };
+
+  // 並び替え
+  const panelSortSelect = root.getElementById("panelSortSelect");
+  panelSortSelect.addEventListener("change", loadMarkerList);
+
+  // フローティングボタン(初期状態はこちらを表示する)
   const floatingButton = document.createElement("div");
   floatingButton.id = "ichnite-floating-button";
   floatingButton.innerHTML = `<img src="${chrome.runtime.getURL("icons/icon_white.png")}" alt="" id="ichnite-floating-icon" />`;
   root.appendChild(floatingButton);
+
+  // フローティングボタンの位置も全タブ共通にする。他タブでウィンドウサイズが違うと
+  // 画面外に出てしまう可能性があるため、反映後は必ず画面内へ収まるよう補正する。
+  //
+  // 注意：clampPopupToViewport()（getBoundingClientRect()で実測して補正する版）は
+  // ここでは使えない。この関数はページ読み込み直後、panel-ui.cssの読み込みが
+  // まだ完了していない可能性があるタイミングで呼ばれるため、position:fixedが
+  // 効く前の「ページの通常の流れの中の位置」（ページが長いと大きく下の方など）を
+  // 実測してしまい、それを基準に補正すると逆に画面外はるか彼方へ飛んでいって
+  // ボタンが完全に消えてしまう。そのためDOM計測に頼らず、CSS側のサイズ(56px)を
+  // 決め打ちで使って座標だけを計算する。
+  function applyFloatingButtonPos(pos) {
+    const SIZE = 56;
+    const MARGIN = 8;
+    let left = parseFloat(pos.left) || 0;
+    let top = parseFloat(pos.top) || 0;
+
+    const maxLeft = Math.max(MARGIN, window.innerWidth - SIZE - MARGIN);
+    const maxTop = Math.max(MARGIN, window.innerHeight - SIZE - MARGIN);
+    left = Math.min(Math.max(left, MARGIN), maxLeft);
+    top = Math.min(Math.max(top, MARGIN), maxTop);
+
+    floatingButton.style.left = `${left}px`;
+    floatingButton.style.top = `${top}px`;
+  }
 
   // 閉じる
   root.getElementById("closePanel").onclick = () => {
@@ -133,7 +222,19 @@ function createSidePanel() {
     floatingButton.style.top = `${event.clientY - offsetY}px`;
   });
 
-  document.addEventListener("mouseup", () => { isDragging = false; });
+  document.addEventListener("mouseup", async () => {
+    if (isDragging && hasMoved) {
+      // 実際にドラッグで動かした場合だけ、位置を全タブ共通の設定として保存する
+      try {
+        await ichniteDataRequest("saveSettings", {
+          floatingButtonPos: { left: floatingButton.style.left, top: floatingButton.style.top },
+        });
+      } catch (error) {
+        console.log("フローティングボタン位置の保存に失敗:", error.message);
+      }
+    }
+    isDragging = false;
+  });
 
   floatingButton.addEventListener("click", () => {
     if (hasMoved) { hasMoved = false; return; }
@@ -167,11 +268,43 @@ function createSidePanel() {
 }
 
 
+// 色順のときの並び順（ツールバーの色スウォッチと同じ並び）
+const ICHNITE_COLOR_ORDER = ["yellow", "green", "blue", "red", "purple"];
+
+function sortPanelMarkers(list, sortKey) {
+  const sorted = [...list];
+
+  switch (sortKey) {
+    case "created_asc":
+      sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      break;
+    case "word_asc":
+      sorted.sort((a, b) => a.selected_text.localeCompare(b.selected_text, "ja"));
+      break;
+    case "word_desc":
+      sorted.sort((a, b) => b.selected_text.localeCompare(a.selected_text, "ja"));
+      break;
+    case "page_asc":
+      sorted.sort((a, b) => (a.page_title || a.page_url || "").localeCompare(b.page_title || b.page_url || "", "ja"));
+      break;
+    case "color":
+      sorted.sort((a, b) => ICHNITE_COLOR_ORDER.indexOf(a.color) - ICHNITE_COLOR_ORDER.indexOf(b.color));
+      break;
+    case "created_desc":
+    default:
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+  }
+
+  return sorted;
+}
+
 async function loadMarkerList() {
   const root = getIchniteRoot();
   const list = root.getElementById("ichnite-marker-list");
   const loading = root.getElementById("ichnite-loading");
-  const filterCheckbox = root.getElementById("filterCurrentPage");
+  const filterBtn = root.getElementById("filterCurrentPageBtn");
+  const sortSelect = root.getElementById("panelSortSelect");
 
   if (!list) return;
 
@@ -179,13 +312,17 @@ async function loadMarkerList() {
   loading.textContent = "読み込み中...";
   list.innerHTML = "";
 
-  const onlyCurrentPage = !!filterCheckbox?.checked;
+  const onlyCurrentPage = !!filterBtn?.classList.contains("is-active");
+  const sortKey = sortSelect?.value || "created_desc";
 
   try {
     const entries = await fetchMarkerBookEntries();
-    const markers = onlyCurrentPage
+    // 同じページ・同じ単語・同じ色が複数あるものだけ、登場順の番号を割り当てる
+    const dupMap = computeDuplicateNumbers(entries);
+    const filtered = onlyCurrentPage
       ? entries.filter(m => m.page_url === window.location.href)
       : entries;
+    const markers = sortPanelMarkers(filtered, sortKey);
 
     loading.style.display = "none";
 
@@ -196,7 +333,7 @@ async function loadMarkerList() {
       return;
     }
 
-    markers.forEach(marker => list.appendChild(createMarkerListItem(marker)));
+    markers.forEach(marker => list.appendChild(createMarkerListItem(marker, dupMap.get(marker.marker_id))));
 
   } catch (error) {
     loading.textContent = "取得できませんでした（APIに接続できません）";
@@ -204,14 +341,17 @@ async function loadMarkerList() {
 }
 
 
-function createMarkerListItem(marker) {
+function createMarkerListItem(marker, dup) {
   const colorLabel = ICHNITE_COLOR_LABEL[marker.color] || marker.color;
   const dateLabel = new Date(marker.created_at).toLocaleDateString("ja-JP");
+  const dupHtml = dup
+    ? `<span class="dup-number" title="このページ内で同じ単語・同じ色が${dup.total}件あるうちの${dup.index}番目">${dup.index}</span>`
+    : "";
 
   const li = document.createElement("li");
   li.className = "ichnite-dict-item";
   li.innerHTML = `
-    <div class="ichnite-dict-word" title="このページ内の登録位置へ移動">${escapeIchniteHtml(marker.selected_text)}</div>
+    <div class="ichnite-dict-word" title="このページ内の登録位置へ移動">${escapeIchniteHtml(marker.selected_text)}${dupHtml}</div>
     <div class="ichnite-dict-meta">
       <span><span class="ichnite-color-dot ${marker.color}"></span>${colorLabel}</span>
       <span class="ichnite-dict-date">${dateLabel}</span>

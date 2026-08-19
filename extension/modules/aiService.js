@@ -4,11 +4,20 @@
 // APIキーはui/settings.htmlで入力してもらい、dataStore.js経由でchrome.storage.localに置く。
 // ==========================================================
 
+// マーカー機能は単語・短いフレーズを想定しているが、サイトによってはCtrl+A等で
+// 非常に長いテキストが選択される場合がある。上限なしにプロンプトへ埋め込むと、
+// 利用者自身のOpenAI利用料が意図せずかさんでしまうため、ここで長さを制限する。
+const MAX_SELECTED_TEXT_LENGTH = 400;
+
 function buildPrompt(selectedText) {
+  const trimmed = selectedText.length > MAX_SELECTED_TEXT_LENGTH
+    ? `${selectedText.slice(0, MAX_SELECTED_TEXT_LENGTH)}…`
+    : selectedText;
+
   return `以下の語句または文章について、日本語で次の5項目を答えてください。
 出力はJSONのみで、前置きや説明は書かないでください。
 
-対象: 「${selectedText}」
+対象: 「${trimmed}」
 
 {
   "explanation": "意味・解説（2〜4文）",

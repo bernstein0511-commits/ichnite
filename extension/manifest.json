@@ -62,6 +62,7 @@
         "modules/shadowHost.js",
         "modules/storage.js",
         "modules/textLocator.js",
+        "ui/markerUtils.js",
         "modules/popup.js",
         "modules/restore.js",
         "modules/marker.js",

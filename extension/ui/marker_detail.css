@@ -263,6 +263,161 @@ body {
 .color-dot.red    { background: #f44336; }
 .color-dot.purple { background: #9c27b0; }
 
+/* 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ表示する、登場順の番号 */
+/* 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ、単語のすぐ後ろに出す登場順の番号。
+   見出しの大きな文字の隣でも浮かないよう、em基準の小さめサイズにして上付きにする */
+.dup-number {
+  margin-left: 6px;
+  color: #b8790f;
+  font-size: 0.5em;
+  font-weight: 800;
+  vertical-align: super;
+}
+
+.dup-number[hidden] {
+  display: none;
+}
+
+/* ===== タグ入力（ui/tagInput.js。記録帳のメモ編集モーダルとも共通デザイン） ===== */
+.tag-editor-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.tag-editor-chips:focus-within {
+  border-color: #fbb61d;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 999px;
+  background: rgba(251, 182, 29, 0.14);
+  color: #8a5b00;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tag-chip-remove {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #b8790f;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.tag-chip-remove:hover {
+  background: rgba(251, 182, 29, 0.3);
+  color: #7a4c00;
+}
+
+.tag-editor-input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #374151;
+  padding: 4px 2px;
+}
+
+/* 入力欄の一行下に出す、候補タグの横スクロール行。クリックした瞬間に追加される */
+.tag-editor-suggestions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-top: 6px;
+  padding-bottom: 4px;
+}
+
+.tag-editor-suggestions[hidden] {
+  display: none;
+}
+
+.tag-editor-suggestions::-webkit-scrollbar {
+  height: 5px;
+}
+
+.tag-editor-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(251, 182, 29, 0.4);
+  border-radius: 999px;
+}
+
+.tag-suggestion {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px dashed rgba(251, 182, 29, 0.6);
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.tag-suggestion:hover {
+  border-color: #fbb61d;
+}
+
+.tag-suggestion-add {
+  border: none;
+  background: none;
+  padding: 4px 4px 4px 10px;
+  color: #a36b00;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.tag-suggestion-add:hover {
+  background: rgba(251, 182, 29, 0.14);
+}
+
+.tag-suggestion-delete {
+  border: none;
+  background: none;
+  padding: 4px 8px 4px 4px;
+  color: #c99a4a;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tag-suggestion-delete:hover {
+  color: #b8790f;
+  background: rgba(251, 182, 29, 0.2);
+}
+
+/* 記録帳の一覧行など、編集不可の読み取り専用表示用（×ボタンなしの簡易版） */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(251, 182, 29, 0.14);
+  color: #8a5b00;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ===== メモのインライン編集 ===== */
 #memo-edit {
   width: 100%;

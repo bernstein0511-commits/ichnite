@@ -1,7 +1,0 @@
-.dockervenv
-.venv
-__pycache__
-.git
-.gitignore
-*.pyc
-.env

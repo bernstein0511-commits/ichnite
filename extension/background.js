@@ -53,6 +53,12 @@ async function handleDataAction(action, payload = {}) {
       return await dsDeleteMarker(payload.markerId);
     case "saveMarkerMemo":
       return await dsSaveMarkerMemo(payload.markerId, payload.memo);
+    case "saveMarkerTags":
+      return await dsSaveMarkerTags(payload.markerId, payload.tags);
+    case "fetchKnownTags":
+      return await dsFetchKnownTags();
+    case "deleteKnownTag":
+      return await dsDeleteKnownTag(payload.tag);
     case "fetchAiNote":
       return await dsFetchAiNote(payload.markerId);
     case "generateAiNote": {
