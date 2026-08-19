@@ -1,14 +1,17 @@
 /* =============================================
    マーカー記録帳  marker_book.js
-   保存済みマーカーの一覧表示・検索/絞り込み・学習統計（ヒートマップ等）・
-   メモ編集・削除を行う。データの実体はchrome.storage.local（background.js経由）。
+   拡張機能のバックエンド(FastAPI)から実データを取得し、
+   一覧表示・検索/絞り込み・学習統計（ヒートマップ等）・メモ編集・削除を行う。
 
    ※ ui/marker_book.html は content script ではなく独立した拡張機能ページ
    （chrome-extension://.../ui/marker_book.html）として開かれるため、
    modules/*.js（content.js・storage.js等）とはJSの実行コンテキストが別。
-   background.jsへの問い合わせはmodules/dataClient.js（html側で読み込み済み）を使う。
+   そのためAPI_BASEやnotifyMarkersUpdated()等をこのファイル内で
+   自前に定義している（modules/storage.jsの関数は使えない）。
    単語1件だけの詳細はui/marker_detail.jsが同じ構成で担当する。
    ============================================= */
+
+const API_BASE = "http://localhost:8000";
 
 // ── 色の日本語ラベル ─────────────────────────────
 const COLOR_LABEL = {
@@ -63,7 +66,10 @@ async function loadMarkerBook() {
   setViewState("loading");
 
   try {
-    const data = await ichniteDataRequest("fetchMarkerBookEntries");
+    const res = await fetch(`${API_BASE}/marker_book/full`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
 
     markers = data.map(item => ({
       id: item.marker_id,
@@ -159,9 +165,8 @@ function createRow(m) {
 
   tr.innerHTML = `
     <td class="cell-word">
-      <div class="word-badge ${escapeHtml(m.color)}">
-        <span class="word-name">${escapeHtml(m.word)}</span>
-      </div>
+      <div class="word-name">${escapeHtml(m.word)}</div>
+      <span class="tag"><span class="color-dot ${escapeHtml(m.color)}"></span>${COLOR_LABEL[m.color] || escapeHtml(m.color)}</span>
     </td>
     <td class="cell-memo">
       <div class="memo-desc${m.explanation ? "" : " empty"}">${explanationHtml}</div>
@@ -177,9 +182,9 @@ function createRow(m) {
     </td>
     <td class="cell-actions">
       <div class="action-group">
-        <button class="action-btn" data-action="view" title="表示">${ICON.eye}</button>
-        <button class="action-btn" data-action="edit" title="編集">${ICON.edit}</button>
-        <button class="action-btn delete" data-action="delete" title="削除">${ICON.trash}</button>
+        <button class="action-btn" data-action="view">${ICON.eye}表示</button>
+        <button class="action-btn" data-action="edit">${ICON.edit}編集</button>
+        <button class="action-btn delete" data-action="delete">${ICON.trash}削除</button>
       </div>
     </td>
   `;
@@ -279,13 +284,19 @@ function openEditModal(m) {
       console.log("メモ保存失敗:", error);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
-      alert(`メモの保存に失敗しました。\n${error.message}`);
+      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
     }
   });
 }
 
 async function saveMemo(markerId, memo) {
-  return await ichniteDataRequest("saveMarkerMemo", { markerId, memo });
+  const res = await fetch(`${API_BASE}/marker_book/${markerId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ memo }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
 }
 
 // ── 削除 ────────────────────────────────────────
@@ -293,7 +304,8 @@ async function onDelete(m, tr) {
   if (!confirm(`「${m.word}」を削除しますか？\nこの操作は取り消せません。`)) return;
 
   try {
-    await ichniteDataRequest("deleteMarker", { markerId: m.id });
+    const res = await fetch(`${API_BASE}/markers/${m.id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     markers = markers.filter(x => x.id !== m.id);
     tr.remove();
@@ -303,7 +315,7 @@ async function onDelete(m, tr) {
     notifyMarkersUpdated({ deletedMarkerId: m.id });
   } catch (error) {
     console.log("削除失敗:", error);
-    alert(`削除に失敗しました。\n${error.message}`);
+    alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
   }
 }
 

@@ -7,23 +7,45 @@
     <title>Ichnite</title>
   </head>
   <body>
-    <div id="menu-header">
-      <img src="../icons/icon_maincolor.png" alt="" id="menu-icon" />
-      <span id="menu-title">Ichnite</span>
+    <div class="panel">
+      <header class="panel-header">
+        <div class="header-left">
+          <img src="../icons/icon_maincolor.png" alt="" id="menu-icon" />
+          <span id="menu-title">Ichnite</span>
+        </div>
+        <button class="close-btn">✕</button>
+      </header>
+
+      <section class="controls">
+        <div class="toggle-row">
+          <div class="toggle-label">マーカー</div>
+          <label class="switch">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-label">ポップアップ</div>
+          <label class="switch">
+            <input type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <button class="record-book">記録帳</button>
+      </section>
+
+      <hr class="thin-sep" />
+
+      <section class="page-only">
+        <label><input type="checkbox" /> このページのみ表示</label>
+      </section>
+
+      <section class="cards" id="cardsContainer">
+        <!-- カードは拡張機能のデータがある場合にのみ JS で挿入します -->
+      </section>
     </div>
-
-    <div id="menu-divider"></div>
-
-    <ul id="menu-list">
-      <li class="menu-item" id="recordsBtn">
-        <span class="menu-item-label">マーカー記録帳を開く</span>
-        <span class="menu-item-arrow">›</span>
-      </li>
-      <li class="menu-item" id="settingsBtn">
-        <span class="menu-item-label">設定（APIキーなど）</span>
-        <span class="menu-item-arrow">›</span>
-      </li>
-    </ul>
 
     <script src="popup.js"></script>
   </body>

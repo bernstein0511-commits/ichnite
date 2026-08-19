@@ -1,60 +1,66 @@
-body {
-  width: 220px;
-  margin: 0;
-  padding: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
-    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-  color: #1a1a2e;
+:root{
+  --orange:#f59e0b;
+  --muted:#f6f3ee;
+  --text:#1a1a2e;
 }
 
-#menu-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+body{
+  margin:0;
+  padding:12px;
+  font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+  color:var(--text);
+  background:transparent;
 }
 
-#menu-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
+.panel{
+  width:360px;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 6px 18px rgba(20,20,20,0.12);
+  background:white;
 }
 
-#menu-title {
-  font-size: 15px;
-  font-weight: 700;
+.panel-header{
+  background:var(--orange);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
 }
 
-#menu-divider {
-  height: 1px;
-  background: #eee;
-  margin: 10px 0;
-}
+.header-left{display:flex;align-items:center;gap:10px}
+#menu-icon{width:28px;height:28px}
+#menu-title{font-weight:800;font-size:18px}
+.close-btn{background:rgba(255,255,255,0.18);border:0;border-radius:999px;color:white;padding:6px 8px;cursor:pointer}
 
-#menu-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+.controls{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.toggle-row{display:flex;justify-content:space-between;align-items:center}
+.toggle-label{font-weight:700}
 
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 6px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
+/* simple switch */
+.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e6e6e6;border-radius:999px;transition:.2s}
+.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.switch input:checked + .slider{background:var(--orange)}
+.switch input:checked + .slider:before{transform:translateX(20px)}
 
-.menu-item:hover {
-  background: rgba(251, 182, 29, 0.14);
-}
+.record-book{background:var(--muted);border:0;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
 
-.menu-item-label {
-  flex: 1;
-}
+.thin-sep{border:0;height:1px;background:#eee;margin:6px 0}
+.page-only{padding:8px 16px;color:#444}
 
-.menu-item-arrow {
-  color: #9ca3af;
-}
+.cards{padding:12px 14px 18px 14px;display:flex;flex-direction:column;gap:12px}
+.card{background:white;border-radius:10px;padding:12px;border:1px solid #f1e6d8}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.card-title{font-weight:800}
+.card-date{color:#9ca3af;font-size:12px}
+.card-body{display:flex;gap:10px;align-items:flex-start}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:4px}
+.dot.yellow{background:#f59e0b}
+.dot.blue{background:#3b82f6}
+.card-text{margin:0;padding:6px 10px;background:#fff6ea;border-radius:8px}
+.card-actions{display:flex;gap:8px;margin-top:10px}
+.btn{border:1px solid #f1e6d8;background:#fff;padding:8px 12px;border-radius:999px;cursor:pointer}
+.btn.small{padding:6px 10px;font-size:13px}
