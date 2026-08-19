@@ -9,23 +9,28 @@
     border-radius: 2px;
     cursor: pointer;
 }
-.yellow {
+
+/* 色名クラス（.yellow等）は単独では使わず、必ず.ichnite-highlightと組み合わせて
+   指定する。このファイルはShadow DOMの外＝閲覧中のページの実DOMへ直接注入されるため、
+   .yellowのような汎用的なクラス名を単独セレクタにすると、同じクラス名を使っている
+   サイト自身の要素（ボタン・タグ等）の見た目まで上書きしてしまう事故になる。 */
+.ichnite-highlight.yellow {
     background:
         rgba(255, 235, 59, 0.6);
 }
-.green {
+.ichnite-highlight.green {
     background:
         rgba(76, 175, 80, 0.4);
 }
-.blue {
+.ichnite-highlight.blue {
     background:
         rgba(33, 150, 243, 0.3);
 }
-.red {
+.ichnite-highlight.red {
     background:
         rgba(244, 67, 54, 0.3);
 }
-.purple {
+.ichnite-highlight.purple {
     background:
         rgba(156, 39, 176, 0.3);
 }

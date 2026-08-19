@@ -6,12 +6,16 @@
 // ==========================================================
 
 document.addEventListener("mouseover", (event) => {
+  if (!ichniteToolbarEnabled) {
+    return;
+  }
+
   const target = event.target;
+
   if (target.classList.contains("ichnite-highlight")) {
     showMemoPopup(target, event.pageX, event.pageY);
   }
 });
-
 
 document.addEventListener("click", (event) => {
   const popup = getIchniteRoot().getElementById("ichnite-memo-popup");
@@ -21,13 +25,14 @@ document.addEventListener("click", (event) => {
   // shadow hostになってしまう。実際のクリック経路はcomposedPath()で取得する。
   const path = event.composedPath();
   const isPopup = path.includes(popup);
-  const isHighlight = path.some((el) => el.classList?.contains("ichnite-highlight"));
+  const isHighlight = path.some((el) =>
+    el.classList?.contains("ichnite-highlight"),
+  );
 
   if (!isPopup && !isHighlight) {
     removeMemoPopup();
   }
 });
-
 
 function showMemoPopup(target, x, y) {
   removeMemoPopup();
@@ -43,7 +48,6 @@ function showMemoPopup(target, x, y) {
   renderMemoPopupView(popup, target);
   clampPopupToViewport(popup);
 }
-
 
 // 画面端（特に右端）でポップアップが見切れないよう、実際のサイズで
 // はみ出していたら位置をずらす。表示内容が変わって高さが増える
@@ -72,16 +76,23 @@ function clampPopupToViewport(popup) {
   popup.style.top = `${top}px`;
 }
 
-
 // メモの表示＋「編集/追加」「削除」ボタン
 function renderMemoPopupView(popup, target) {
   const memo = target.dataset.memo || "";
   const hasMemo = memo.trim() !== "";
 
+  // 同じページ・同じ単語・同じ色のハイライトが複数あるときだけ、登場順の番号を出す
+  const dupIndex = target.dataset.dupIndex;
+  const dupHtml = dupIndex
+    ? `<div class="ichnite-memo-dup" title="このページ内で同じ単語・同じ色が${target.dataset.dupTotal}件あるうちの${dupIndex}番目">${dupIndex}</div>`
+    : "";
+
   popup.innerHTML = `
-    ${hasMemo
-      ? `<div class="ichnite-memo-text">${escapeIchniteHtml(memo)}</div>`
-      : `<div class="ichnite-memo-empty">メモなし</div>`
+    ${dupHtml}
+    ${
+      hasMemo
+        ? `<div class="ichnite-memo-text">${escapeIchniteHtml(memo)}</div>`
+        : `<div class="ichnite-memo-empty">メモなし</div>`
     }
     <div class="ichnite-memo-popup-actions">
       <button id="editMemo">${hasMemo ? "メモを編集" : "メモを追加"}</button>
@@ -96,14 +107,14 @@ function renderMemoPopupView(popup, target) {
   popup.querySelector("#deleteMemo").onclick = async () => {
     try {
       await removeMarkerCompletely(target.dataset.markerId);
-    } catch {
-      alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
+    } catch (error) {
+      console.log("マーカー削除失敗:", error.message);
+      alert(`マーカーの削除に失敗しました。\n${error.message}`);
     }
 
     removeMemoPopup();
   };
 }
-
 
 // メモのインライン編集（テーマに合わせたUI。prompt()は使わない）
 function renderMemoPopupEdit(popup, target) {
@@ -135,16 +146,19 @@ function renderMemoPopupEdit(popup, target) {
     try {
       await saveMarkerMemo(target.dataset.markerId, newMemo);
       target.dataset.memo = newMemo;
+      // 同一タブのサイドパネル一覧にも即座に反映する（notifyMarkersUpdated()経由の
+      // メッセージ通知だけでは同一タブに反映されないことがあったため）
+      loadMarkerList();
       notifyMarkersUpdated();
       renderMemoPopupView(popup, target);
-    } catch {
-      alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
+    } catch (error) {
+      console.log("メモ保存失敗:", error.message);
+      alert(`メモの保存に失敗しました。\n${error.message}`);
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
     }
   };
 }
-
 
 function removeMemoPopup() {
   const popup = getIchniteRoot().getElementById("ichnite-memo-popup");

@@ -80,6 +80,7 @@ body {
   border: 1.5px solid #d1d5db;
   background: #fff;
   color: #374151;
+  text-decoration: none;
   transition: background 0.15s, border-color 0.15s;
 }
 
@@ -208,8 +209,12 @@ body {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+/* table-layout: fixed + colgroup(marker_book.html)の%指定で、
+   ウィンドウ幅がどれだけ狭くても横スクロールなしで収まるようにする。
+   はみ出す分は各セル側で折り返し・省略（line-clamp等）で吸収する。 */
 table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
@@ -243,16 +248,193 @@ td {
 }
 
 /* ===== Word cell ===== */
-.cell-word {
-  min-width: 140px;
+/* テーブル形式は維持しつつ、単語そのものを大きなタグ風バッジにして最も目立つ要素にする */
+.word-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border-left: 4px solid transparent;
+}
+
+/* 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ、単語のすぐ後ろに出す登場順の番号。
+   バッジ化はせず、色で目立たせつつ単語本体とは区別できる程度のシンプルな表記にする */
+.dup-number {
+  margin-left: 6px;
+  color: #b8790f;
+  font-size: 0.8em;
+  font-weight: 800;
+  vertical-align: super;
 }
 
 .word-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 6px;
+  font-size: 17px;
+  font-weight: 800;
   line-height: 1.3;
+  word-break: break-word;
+}
+
+.word-badge.yellow { background: rgba(244, 196, 48, 0.18); border-left-color: #f4c430; }
+.word-badge.yellow .word-name { color: #8a6d00; }
+
+.word-badge.green { background: rgba(76, 175, 80, 0.16); border-left-color: #4caf50; }
+.word-badge.green .word-name { color: #256029; }
+
+.word-badge.blue { background: rgba(33, 150, 243, 0.16); border-left-color: #2196f3; }
+.word-badge.blue .word-name { color: #175585; }
+
+.word-badge.red { background: rgba(244, 67, 54, 0.16); border-left-color: #f44336; }
+.word-badge.red .word-name { color: #a1291f; }
+
+.word-badge.purple { background: rgba(156, 39, 176, 0.16); border-left-color: #9c27b0; }
+.word-badge.purple .word-name { color: #6a1b76; }
+
+/* 単語バッジの下に並ぶ、ユーザーが付けたタグ（読み取り専用。編集はモーダル/詳細ページで行う） */
+.cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(251, 182, 29, 0.14);
+  color: #8a5b00;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ===== タグ入力（ui/tagInput.js。記録帳のメモ編集モーダルで使用） ===== */
+.tag-editor-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.tag-editor-chips:focus-within {
+  border-color: #fbb61d;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 999px;
+  background: rgba(251, 182, 29, 0.14);
+  color: #8a5b00;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tag-chip-remove {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #b8790f;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.tag-chip-remove:hover {
+  background: rgba(251, 182, 29, 0.3);
+  color: #7a4c00;
+}
+
+.tag-editor-input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: #374151;
+  padding: 4px 2px;
+}
+
+/* 入力欄の一行下に出す、候補タグの横スクロール行。クリックした瞬間に追加される */
+.tag-editor-suggestions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-top: 6px;
+  padding-bottom: 4px;
+}
+
+.tag-editor-suggestions[hidden] {
+  display: none;
+}
+
+.tag-editor-suggestions::-webkit-scrollbar {
+  height: 5px;
+}
+
+.tag-editor-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(251, 182, 29, 0.4);
+  border-radius: 999px;
+}
+
+.tag-suggestion {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px dashed rgba(251, 182, 29, 0.6);
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.tag-suggestion:hover {
+  border-color: #fbb61d;
+}
+
+.tag-suggestion-add {
+  border: none;
+  background: none;
+  padding: 4px 4px 4px 10px;
+  color: #a36b00;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.tag-suggestion-add:hover {
+  background: rgba(251, 182, 29, 0.14);
+}
+
+.tag-suggestion-delete {
+  border: none;
+  background: none;
+  padding: 4px 8px 4px 4px;
+  color: #c99a4a;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tag-suggestion-delete:hover {
+  color: #b8790f;
+  background: rgba(251, 182, 29, 0.2);
 }
 
 .tag {
@@ -466,11 +648,6 @@ td {
 }
 
 /* ===== Memo cell ===== */
-.cell-memo {
-  min-width: 220px;
-  max-width: 320px;
-}
-
 .memo-desc {
   font-size: 13px;
   color: #374151;
@@ -506,11 +683,6 @@ td {
 }
 
 /* ===== Source cell ===== */
-.cell-source {
-  min-width: 150px;
-  max-width: 220px;
-}
-
 .source-link {
   color: #a36b00;
   text-decoration: none;
@@ -536,7 +708,6 @@ td {
 
 /* ===== Date cell ===== */
 .cell-date {
-  min-width: 100px;
   white-space: nowrap;
 }
 
@@ -552,28 +723,32 @@ td {
 }
 
 /* ===== Actions cell ===== */
+/* アイコンのみのボタンにして必要な横幅を抑え、狭いウィンドウでも横スクロールなしで収まるようにする */
 .cell-actions {
   white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .action-group {
   display: flex;
-  gap: 12px;
+  gap: 4px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .action-btn {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
   border-radius: 6px;
   color: #9ca3af;
-  font-size: 11px;
   transition: color 0.15s, background 0.15s;
 }
 
@@ -583,8 +758,8 @@ td {
 }
 
 .action-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.8;
@@ -682,6 +857,14 @@ td {
 
 .modal-section {
   margin-bottom: 16px;
+}
+
+.modal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin-bottom: 6px;
 }
 
 .modal textarea {

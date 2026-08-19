@@ -63,6 +63,14 @@
     box-sizing: border-box;
 }
 
+/* 同じページ・同じ単語・同じ色のハイライトが複数あるときだけ表示する、登場順の番号 */
+.ichnite-memo-dup {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ichnite-primary);
+    margin-bottom: 4px;
+}
+
 .ichnite-memo-text {
     white-space: pre-wrap;
     word-break: break-word;
@@ -168,6 +176,8 @@
     background: var(--ichnite-primary);
 
     color: #ffffff;
+
+    cursor: grab;
 }
 
 /* 1段目：タイトルと閉じるボタン */
@@ -301,22 +311,51 @@
 #ichnite-filter-bar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
     padding-bottom: 12px;
     font-size: 13px;
     color: var(--ichnite-text-muted);
 }
 
-#ichnite-filter-bar input {
-    accent-color: var(--ichnite-primary);
+#filterCurrentPageBtn {
+    border: 1px solid var(--ichnite-border);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--ichnite-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#filterCurrentPageBtn:hover {
+    border-color: var(--ichnite-primary);
+}
+
+#filterCurrentPageBtn.is-active {
+    background: var(--ichnite-primary);
+    border-color: var(--ichnite-primary);
+    color: #ffffff;
+}
+
+#panelSortSelect {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--ichnite-border);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--ichnite-text);
+    font-size: 12px;
+    padding: 5px 10px;
     cursor: pointer;
 }
 
-#ichnite-filter-bar label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
+#panelSortSelect:focus {
+    outline: none;
+    border-color: var(--ichnite-primary);
 }
 
 
@@ -361,6 +400,15 @@
 .ichnite-dict-word:hover {
     color: var(--ichnite-primary);
     text-decoration: underline;
+}
+
+/* 同じページ・同じ単語・同じ色のマーカーが複数あるときだけ、単語のすぐ後ろに出す登場順の番号 */
+.dup-number {
+    margin-left: 5px;
+    color: var(--ichnite-primary);
+    font-size: 0.7em;
+    font-weight: 800;
+    vertical-align: super;
 }
 
 .ichnite-dict-meta {
@@ -529,4 +577,11 @@
     transform: translateY(-3px);
 
     box-shadow: 0 10px 24px rgba(251, 182, 29, 0.55);
+}
+
+#ichnite-floating-icon {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    pointer-events: none;
 }

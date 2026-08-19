@@ -28,6 +28,10 @@
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         検索
       </button>
+      <a class="btn" id="btn-settings" href="settings.html">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        設定
+      </a>
     </div>
   </div>
 
@@ -93,11 +97,22 @@
     <select class="filter-select" id="filter-color">
       <option value="">すべての色</option>
     </select>
+    <select class="filter-select" id="filter-tag">
+      <option value="">すべてのタグ</option>
+    </select>
     <select class="filter-select" id="filter-period">
       <option value="">すべての期間</option>
       <option value="7">直近7日</option>
       <option value="30">直近30日</option>
       <option value="90">直近90日</option>
+    </select>
+    <select class="filter-select" id="filter-sort">
+      <option value="created_desc">追加順（新しい順）</option>
+      <option value="created_asc">追加順（古い順）</option>
+      <option value="word_asc">言葉（あいうえお順）</option>
+      <option value="word_desc">言葉（あいうえお逆順）</option>
+      <option value="page_asc">元のページ順</option>
+      <option value="color">色順</option>
     </select>
     <div class="filter-search">
       <input type="text" id="filter-keyword" placeholder="キーワードで検索">
@@ -110,6 +125,13 @@
   <!-- Table -->
   <div class="table-wrapper">
     <table>
+      <colgroup>
+        <col style="width: 17%">
+        <col style="width: 30%">
+        <col style="width: 18%">
+        <col style="width: 12%">
+        <col style="width: 23%">
+      </colgroup>
       <thead>
         <tr>
           <th>言葉・フレーズ</th>
@@ -130,7 +152,7 @@
       <p>該当する記録が見つかりませんでした。</p>
     </div>
     <div class="error-state" id="error-state" hidden>
-      <p>取得できませんでした。バックエンド（<code>http://localhost:8000</code>）が起動しているか確認してください。</p>
+      <p>マーカーの取得に失敗しました。拡張機能を再読み込みしてから、もう一度お試しください。</p>
       <button class="btn" id="btn-retry">再読み込み</button>
     </div>
   </div>
@@ -142,6 +164,9 @@
   <div class="modal" id="modal-box"></div>
 </div>
 
+<script src="../modules/dataClient.js"></script>
+<script src="tagInput.js"></script>
+<script src="markerUtils.js"></script>
 <script src="marker_book.js"></script>
 </body>
 </html>

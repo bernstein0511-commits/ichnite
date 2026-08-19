@@ -1,7 +1,7 @@
 // ==========================================================
 // modules/marker.js — 「新しいマーカーを作る」フロー全体を担当。
 // 流れ：テキスト選択(mouseup) → 色選択ツールバー表示 → 色クリックでaddMarker()
-//       → ページDOMにハイライトspanを挿入 → バックエンドに保存 → AI解説を生成
+//       → ページDOMにハイライトspanを挿入 → chrome.storage.localに保存 → AI解説を生成
 // マーカーの削除（DOM解除＋DB削除＋他タブ通知）もここに集約している
 // （panel.js・popup.js の削除ボタンはどちらもここのremoveMarkerCompletely()を呼ぶ）。
 // ==========================================================
@@ -102,8 +102,12 @@ async function addMarker(event) {
     // サイドパネル（同一タブ）と記録帳ページ（別タブ）へ即時反映
     loadMarkerList();
     notifyMarkersUpdated();
-  } catch {
-    // 保存に失敗した場合、markerIdが空のままなので以降のAI解説生成はスキップされる
+
+    // 同じページ・同じ単語・同じ色の既存ハイライトがあれば、今回の追加で
+    // 番号（1件目/2件目...）がずれるので、ページ上の全ハイライトを再計算する
+    refreshDuplicateNumbersOnPage();
+  } catch (error) {
+    console.log("マーカー保存失敗:", error.message);
   }
 
   // AI解説は別で試みる（失敗してもマーカーは消えない）
@@ -150,5 +154,13 @@ function unwrapHighlightById(markerId) {
 async function removeMarkerCompletely(markerId) {
   await deleteMarker(markerId);
   unwrapHighlightById(markerId);
+
+  // サイドパネル（同一タブ）と記録帳ページ（別タブ）へ即時反映。
+  // notifyMarkersUpdated()だけだと同一タブのパネル一覧が即座に更新されない
+  // ケースがあったため、addMarker()と同様にここでも直接呼んでおく。
+  loadMarkerList();
   notifyMarkersUpdated({ deletedMarkerId: markerId });
+
+  // 削除で残りの同じ単語・同じ色のハイライトの番号がずれる可能性があるため再計算する
+  refreshDuplicateNumbersOnPage();
 }
