@@ -1,0 +1,34 @@
+変更点まとめ（AI感のあるコードの修正）
+
+対象: extension/ 以下の全ファイル（ガワ・動作は変更なし）
+
+1. console.log の整理
+   デバッグ用に残っていた console.log を全て削除。
+   - content/content.js
+       読み込み完了時のログを削除
+   - modules/marker.js
+       選択取得失敗、ボタンmousedown、二重登録、マーカーDOM失敗、
+       マーカー保存成功/失敗、AI解説スキップ、の各ログを削除
+   - modules/panel.js
+       マーカー削除失敗、メモ保存失敗、遷移先URL解析失敗、の各ログを削除
+   - modules/popup.js
+       マーカー削除失敗、メモ保存失敗、の各ログを削除
+   - modules/restore.js
+       マーカー復元失敗、メモ取得失敗、復元失敗（該当箇所なし）、
+       復元成功、復元失敗、の各ログを削除
+   - ui/marker_book.js
+       記録帳取得失敗、メモ保存失敗、削除失敗、の各ログを削除
+   - ui/marker_detail.js
+       マーカー詳細取得失敗、メモ保存失敗、AI解説生成失敗、削除失敗、の各ログを削除
+
+   ログ削除後、catch ブロックの中身が空になった箇所は
+   catch (error) {} ではなく catch {} に統一し、
+   必要な場合のみ一言コメントを添えた。
+   alert() によるユーザーへのエラー表示や、エラー時の
+   フォールバック処理（setViewState("error") など）はそのまま残した。
+
+2. modules/popup.js の改行スタイルを統一
+   1つの式や条件を不自然に何行にも分割していた記述
+   （document.addEventListener の引数展開、if文、classList.contains 等）を、
+   他のファイル（marker.js・panel.js等）と同じ通常の書き方に整形。
+   ロジック・変数名・処理内容は変更していない。

@@ -90,8 +90,7 @@ async function loadMarkerBook() {
     applyFilters();
     renderStats(markers);
     showStatus(`全 ${markers.length} 件のマーカーを読み込みました`, false);
-  } catch (error) {
-    console.log("記録帳の取得に失敗:", error);
+  } catch {
     setViewState("error");
   }
 }
@@ -280,8 +279,7 @@ function openEditModal(m) {
       const status = modalBox.querySelector("#save-status");
       if (status) status.hidden = false;
       setTimeout(closeModal, 600);
-    } catch (error) {
-      console.log("メモ保存失敗:", error);
+    } catch {
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
       alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
@@ -313,8 +311,7 @@ async function onDelete(m, tr) {
     renderStats(markers);
     showStatus(`「${m.word}」を削除しました`, false);
     notifyMarkersUpdated({ deletedMarkerId: m.id });
-  } catch (error) {
-    console.log("削除失敗:", error);
+  } catch {
     alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
   }
 }

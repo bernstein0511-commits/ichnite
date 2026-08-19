@@ -5,65 +5,28 @@
 // 見た目・置き場所（ページ内 vs パネル内）が違うだけ。
 // ==========================================================
 
-document.addEventListener(
-  "mouseover",
-  (event) => {
-
-    const target =
-      event.target;
-
-    if (
-      target.classList.contains(
-        "ichnite-highlight"
-      )
-    ) {
-
-      showMemoPopup(
-        target,
-        event.pageX,
-        event.pageY
-      );
-
-    }
+document.addEventListener("mouseover", (event) => {
+  const target = event.target;
+  if (target.classList.contains("ichnite-highlight")) {
+    showMemoPopup(target, event.pageX, event.pageY);
   }
-);
+});
 
 
-document.addEventListener(
-  "click",
-  (event) => {
+document.addEventListener("click", (event) => {
+  const popup = getIchniteRoot().getElementById("ichnite-memo-popup");
+  if (!popup) return;
 
-    const popup =
-      getIchniteRoot().getElementById(
-        "ichnite-memo-popup"
-      );
+  // popupはShadow DOM内にあるため、event.targetは再ターゲット化されて
+  // shadow hostになってしまう。実際のクリック経路はcomposedPath()で取得する。
+  const path = event.composedPath();
+  const isPopup = path.includes(popup);
+  const isHighlight = path.some((el) => el.classList?.contains("ichnite-highlight"));
 
-    if (!popup) return;
-
-    // popupはShadow DOM内にあるため、event.targetは再ターゲット化されて
-    // shadow hostになってしまう。実際のクリック経路はcomposedPath()で取得する。
-    const path = event.composedPath();
-
-    const isPopup =
-      path.includes(popup);
-
-    const isHighlight =
-      path.some(
-        (el) =>
-          el.classList
-            ?.contains(
-              "ichnite-highlight"
-            )
-      );
-
-    if (
-      !isPopup &&
-      !isHighlight
-    ) {
-      removeMemoPopup();
-    }
+  if (!isPopup && !isHighlight) {
+    removeMemoPopup();
   }
-);
+});
 
 
 function showMemoPopup(target, x, y) {
@@ -133,8 +96,7 @@ function renderMemoPopupView(popup, target) {
   popup.querySelector("#deleteMemo").onclick = async () => {
     try {
       await removeMarkerCompletely(target.dataset.markerId);
-    } catch (error) {
-      console.log("マーカー削除失敗:", error.message);
+    } catch {
       alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
     }
 
@@ -175,8 +137,7 @@ function renderMemoPopupEdit(popup, target) {
       target.dataset.memo = newMemo;
       notifyMarkersUpdated();
       renderMemoPopupView(popup, target);
-    } catch (error) {
-      console.log("メモ保存失敗:", error.message);
+    } catch {
       alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
@@ -186,13 +147,6 @@ function renderMemoPopupEdit(popup, target) {
 
 
 function removeMemoPopup() {
-
-  const popup =
-    getIchniteRoot().getElementById(
-      "ichnite-memo-popup"
-    );
-
-  if (popup) {
-    popup.remove();
-  }
+  const popup = getIchniteRoot().getElementById("ichnite-memo-popup");
+  if (popup) popup.remove();
 }

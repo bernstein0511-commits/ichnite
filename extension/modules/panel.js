@@ -218,8 +218,7 @@ function createMarkerListItem(marker) {
     try {
       await removeMarkerCompletely(marker.marker_id);
       li.remove();
-    } catch (error) {
-      console.log("マーカー削除失敗:", error.message);
+    } catch {
       alert("マーカーの削除に失敗しました。バックエンドが起動しているか確認してください。");
     }
   });
@@ -261,8 +260,7 @@ function renderPanelMemoEdit(memoArea, memoBtn, marker) {
       marker.memo = newMemo;
       renderPanelMemoView(memoArea, memoBtn, marker);
       notifyMarkersUpdated();
-    } catch (error) {
-      console.log("メモ保存失敗:", error.message);
+    } catch {
       alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
@@ -278,8 +276,8 @@ function goToMarker(marker) {
       const target = new URL(marker.page_url);
       target.searchParams.set("ichniteMarkerId", marker.marker_id);
       window.location.href = target.toString();
-    } catch (error) {
-      console.log("遷移先URLの解析に失敗:", error.message);
+    } catch {
+      // 遷移先URLの解析に失敗した場合は何もしない
     }
     return;
   }

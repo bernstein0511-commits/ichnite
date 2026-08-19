@@ -18,8 +18,8 @@ document.addEventListener("mouseup", (event) => {
   try {
     currentSelection = selection.getRangeAt(0).cloneRange();
     showToolbar(event.pageX, event.pageY);
-  } catch (error) {
-    console.log("選択取得失敗:", error);
+  } catch {
+    // 選択範囲を取得できなかった場合は何もしない
   }
 });
 
@@ -49,7 +49,6 @@ function showToolbar(x, y) {
     button.addEventListener("mousedown", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      console.log("ボタンmousedown:", button.dataset.color);
       selectedColor = button.dataset.color;
       addMarker(event);
     });
@@ -65,7 +64,6 @@ async function addMarker(event) {
   // 既にマーカーが引かれている箇所への二重登録を防ぐ
   const alreadyMarked = currentSelection.startContainer.parentElement?.closest(".ichnite-highlight");
   if (alreadyMarked) {
-    console.log("この箇所には既にマーカーが引かれています");
     removeToolbar();
     window.getSelection().removeAllRanges();
     return;
@@ -85,8 +83,7 @@ async function addMarker(event) {
   try {
     currentSelection.surroundContents(markerEl);
     window.getSelection().removeAllRanges();
-  } catch (error) {
-    console.log("マーカーDOM失敗:", error);
+  } catch {
     removeToolbar();
     return;
   }
@@ -101,13 +98,12 @@ async function addMarker(event) {
       occurrenceIndex
     );
     markerEl.dataset.markerId = markerId;
-    console.log("マーカー保存成功:", markerId);
 
     // サイドパネル（同一タブ）と記録帳ページ（別タブ）へ即時反映
     loadMarkerList();
     notifyMarkersUpdated();
-  } catch (error) {
-    console.log("マーカー保存失敗:", error.message);
+  } catch {
+    // 保存に失敗した場合、markerIdが空のままなので以降のAI解説生成はスキップされる
   }
 
   // AI解説は別で試みる（失敗してもマーカーは消えない）
@@ -123,8 +119,8 @@ async function addMarker(event) {
       // マーカー保存時点ではAI解説がまだ無い状態で通知済みのため、
       // 生成が完了した今の状態でサイドパネル・記録帳へ改めて反映する
       notifyMarkersUpdated();
-    } catch (error) {
-      console.log("AI解説スキップ:", error.message);
+    } catch {
+      // AI解説の生成に失敗してもマーカー自体は消さない
     }
   }
 }

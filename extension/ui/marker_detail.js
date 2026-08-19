@@ -99,8 +99,7 @@ async function loadMarker() {
     };
 
     renderMarker();
-  } catch (error) {
-    console.log("マーカー詳細の取得に失敗:", error);
+  } catch {
     showError();
   }
 }
@@ -190,8 +189,7 @@ btnEdit.addEventListener("click", () => {
       marker.memo = textarea.value.trim();
       restoreView();
       notifyMarkersUpdated();
-    } catch (error) {
-      console.log("メモ保存失敗:", error);
+    } catch {
       alert("メモの保存に失敗しました。バックエンドが起動しているか確認してください。");
       saveBtn.disabled = false;
       saveBtn.textContent = "保存";
@@ -231,8 +229,7 @@ btnRegenerateAi.addEventListener("click", async () => {
 
     renderMarker();
     notifyMarkersUpdated();
-  } catch (error) {
-    console.log("AI解説生成失敗:", error);
+  } catch {
     alert("AI解説の生成に失敗しました。バックエンドのOPENAI_API_KEY設定を確認してください。");
     btnRegenerateAi.disabled = false;
     btnRegenerateAi.textContent = original;
@@ -250,8 +247,7 @@ btnDelete.addEventListener("click", async () => {
 
     notifyMarkersUpdated({ deletedMarkerId: marker.id });
     window.location.href = "marker_book.html";
-  } catch (error) {
-    console.log("削除失敗:", error);
+  } catch {
     alert("削除に失敗しました。バックエンドが起動しているか確認してください。");
   }
 });

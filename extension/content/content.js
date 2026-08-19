@@ -36,5 +36,3 @@ function escapeIchniteHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
-
-console.log("Ichnite content.js 読み込み成功");

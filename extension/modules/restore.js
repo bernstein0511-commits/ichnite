@@ -19,8 +19,8 @@ async function restoreMarkers() {
 
     // サイドパネルの登録文字クリックで他ページから遷移してきた場合、対象位置までスクロール
     scrollToRequestedMarker();
-  } catch (error) {
-    console.log("マーカー復元失敗:", error);
+  } catch {
+    // 復元に失敗しても他の処理は継続する
   }
 }
 
@@ -34,8 +34,8 @@ async function fetchMemoMapForCurrentPage() {
     entries
       .filter(entry => entry.page_url === window.location.href)
       .forEach(entry => map.set(entry.marker_id, entry.memo || ""));
-  } catch (error) {
-    console.log("メモの取得に失敗:", error.message);
+  } catch {
+    // 取得に失敗した場合は空のままにする
   }
   return map;
 }
@@ -61,10 +61,7 @@ async function restoreSingleMarker(marker, memo = "") {
   const occurrenceIndex = marker.position_start;
 
   const location = findOccurrenceRange(targetText, occurrenceIndex);
-  if (!location) {
-    console.log("復元失敗（該当箇所が見つかりません）:", targetText);
-    return;
-  }
+  if (!location) return;
 
   const range = document.createRange();
   range.setStart(location.node, location.start);
@@ -85,9 +82,7 @@ async function restoreSingleMarker(marker, memo = "") {
       markerEl.dataset.aiNote = JSON.stringify(aiNote);
       markerEl.dataset.aiLoaded = "true";
     }
-
-    console.log("復元成功:", targetText);
-  } catch (error) {
-    console.log("復元失敗:", error);
+  } catch {
+    // 復元に失敗しても他のマーカーの処理は続ける
   }
 }
