@@ -47,14 +47,39 @@ function createSidePanel() {
         <button id="closePanel">×</button>
       </div>
       <div id="ichnite-panel-header-actions">
-        <button id="toggleMarkers" title="ページ上のマーカー表示を切り替え">マーカー: 表示</button>
-        <button id="toggleToolbar" title="文字のポップアップ表示を切り替え">ポップアップ: 表示</button>
-        <button id="openMarkerBook" title="マーカー記録帳を開く">記録帳</button>
+        <h2>表示設定（ON / OFF）</h2>
+        <button class="ichnite-setting-card" id="toggleMarkers" title="ページ上のマーカー表示を切り替え">
+          <span class="ichnite-marker-icon" aria-hidden="true"></span>
+          <span class="ichnite-setting-copy">
+            <strong>マーカー</strong>
+            <small id="markersStatus">現在：表示中</small>
+          </span>
+          <span class="ichnite-setting-toggle" id="markersToggle" aria-hidden="true"><span></span></span>
+        </button>
+        <button class="ichnite-setting-card" id="toggleToolbar" title="文字のポップアップ表示を切り替え">
+          <span class="ichnite-setting-icon ichnite-popup-icon" aria-hidden="true">•••</span>
+          <span class="ichnite-setting-copy">
+            <strong>ポップアップ</strong>
+            <small id="popupStatus">現在：表示中</small>
+          </span>
+          <span class="ichnite-setting-toggle" id="popupToggle" aria-hidden="true"><span></span></span>
+        </button>
+        <button class="ichnite-setting-card ichnite-records-card" id="openMarkerBook" title="マーカー記録帳を開く">
+          <span class="ichnite-setting-icon ichnite-book-icon" aria-hidden="true"><span></span></span>
+          <span class="ichnite-setting-copy">
+            <strong>記録帳</strong>
+            <small>保存したメモを一覧で確認する</small>
+          </span>
+          <span class="ichnite-records-arrow" aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
     <div id="ichnite-panel-content">
       <div id="ichnite-filter-bar">
-        <button type="button" id="filterCurrentPageBtn" title="このページのマーカーだけに絞り込む">表示範囲: 全ページ</button>
+        <select id="filterCurrentPageSelect" title="表示範囲">
+          <option value="all">表示範囲: 全ページ</option>
+          <option value="current">表示範囲: このページ</option>
+        </select>
         <select id="panelSortSelect" title="並び替え">
           <option value="created_desc">新しい順</option>
           <option value="created_asc">古い順</option>
@@ -87,14 +112,16 @@ function createSidePanel() {
   function applyMarkersVisible(visible) {
     markersVisible = visible;
     document.documentElement.classList.toggle("ichnite-markers-hidden", !visible);
-    toggleMarkersBtn.textContent = visible ? "マーカー: 表示" : "マーカー: 非表示";
+    root.getElementById("markersStatus").textContent = visible ? "現在：表示中" : "現在：非表示";
+    root.getElementById("markersToggle").classList.toggle("is-on", visible);
     toggleMarkersBtn.classList.toggle("is-off", !visible);
   }
 
   function applyToolbarEnabled(enabled) {
     toolbarEnabled = enabled;
     ichniteToolbarEnabled = enabled;
-    toggleToolbarBtn.textContent = enabled ? "ポップアップ: 表示" : "ポップアップ: 非表示";
+    root.getElementById("popupStatus").textContent = enabled ? "現在：表示中" : "現在：非表示";
+    root.getElementById("popupToggle").classList.toggle("is-on", enabled);
     toggleToolbarBtn.classList.toggle("is-off", !enabled);
     if (!enabled) {
       removeToolbar();
@@ -147,16 +174,11 @@ function createSidePanel() {
     }
   });
 
-  // 現在のページのマーカーだけに絞り込む（チェックボックスではなくトグルボタン）。
-  // loadMarkerList()はモジュール直下の関数でここのローカル変数は見えないため、
-  // 状態は（旧チェックボックスの.checkedと同じように）DOM側（classList）に持たせる。
-  const filterCurrentPageBtn = root.getElementById("filterCurrentPageBtn");
-  filterCurrentPageBtn.onclick = () => {
-    const next = !filterCurrentPageBtn.classList.contains("is-active");
-    filterCurrentPageBtn.classList.toggle("is-active", next);
-    filterCurrentPageBtn.textContent = next ? "表示範囲: このページ" : "表示範囲: 全ページ";
+  // 表示範囲はDOM上のselect値で保持し、一覧取得時に参照する。
+  const filterCurrentPageSelect = root.getElementById("filterCurrentPageSelect");
+  filterCurrentPageSelect.addEventListener("change", () => {
     loadMarkerList();
-  };
+  });
 
   // 並び替え
   const panelSortSelect = root.getElementById("panelSortSelect");
@@ -303,7 +325,7 @@ async function loadMarkerList() {
   const root = getIchniteRoot();
   const list = root.getElementById("ichnite-marker-list");
   const loading = root.getElementById("ichnite-loading");
-  const filterBtn = root.getElementById("filterCurrentPageBtn");
+  const filterSelect = root.getElementById("filterCurrentPageSelect");
   const sortSelect = root.getElementById("panelSortSelect");
 
   if (!list) return;
@@ -312,7 +334,7 @@ async function loadMarkerList() {
   loading.textContent = "読み込み中...";
   list.innerHTML = "";
 
-  const onlyCurrentPage = !!filterBtn?.classList.contains("is-active");
+  const onlyCurrentPage = filterSelect?.value === "current";
   const sortKey = sortSelect?.value || "created_desc";
 
   try {
@@ -349,7 +371,7 @@ function createMarkerListItem(marker, dup) {
     : "";
 
   const li = document.createElement("li");
-  li.className = "ichnite-dict-item";
+  li.className = `ichnite-dict-item ${marker.color || ""}`;
   li.innerHTML = `
     <div class="ichnite-dict-word" title="このページ内の登録位置へ移動">${escapeIchniteHtml(marker.selected_text)}${dupHtml}</div>
     <div class="ichnite-dict-meta">

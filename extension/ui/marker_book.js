@@ -626,10 +626,6 @@ filterPeriod.addEventListener("change", applyFilters);
 filterSort.addEventListener("change", applyFilters);
 filterKeyword.addEventListener("input", applyFilters);
 
-document.getElementById("btn-search").addEventListener("click", () => {
-  filterKeyword.focus();
-});
-
 document.getElementById("btn-refresh").addEventListener("click", loadMarkerBook);
 document.getElementById("btn-retry").addEventListener("click", loadMarkerBook);
 

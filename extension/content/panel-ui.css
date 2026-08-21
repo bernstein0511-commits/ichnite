@@ -173,9 +173,9 @@
 
     padding: 14px 16px 12px 20px;
 
-    background: var(--ichnite-primary);
+    background: #ffffff;
 
-    color: #ffffff;
+    color: #333333;
 
     cursor: grab;
 }
@@ -188,6 +188,11 @@
 
     font-size: 18px;
     font-weight: bold;
+
+    margin: -14px -16px 0 -20px;
+    padding: 14px 16px 12px 20px;
+    background: var(--ichnite-primary);
+    color: #ffffff;
 }
 
 .ichnite-panel-title {
@@ -206,55 +211,244 @@
 /* 2段目：マーカー表示／カラー選択／記録帳の操作ボタン */
 #ichnite-panel-header-actions {
     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-direction: column;
+    gap: 8px;
 }
 
-#toggleMarkers,
-#toggleToolbar {
-    border: none;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s, transform 0.2s;
-}
-
-#toggleMarkers:hover,
-#toggleToolbar:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(1.05);
-}
-
-#toggleMarkers.is-off,
-#toggleToolbar.is-off {
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.7);
-}
-
-/* 記録帳ボタンだけ白背景にして、他の操作ボタンより目立たせる */
-#openMarkerBook {
-    border: none;
-    border-radius: 999px;
-    background: #ffffff;
-    color: #b8790f;
-    font-size: 12px;
+#ichnite-panel-header-actions h2 {
+    align-self: flex-start;
+    margin: 0 6px 4px;
+    color: #333333;
+    font-size: 13px;
     font-weight: 700;
-    padding: 6px 14px;
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-#openMarkerBook:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+.ichnite-setting-card {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 64px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #333333;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.04);
+}
+
+.ichnite-setting-card:hover {
+    background: #fffaf0;
+}
+
+.ichnite-records-card {
+    background: #fff9ed;
+}
+
+.ichnite-setting-icon {
+    display: grid;
+    place-items: center;
+    width: 33px;
+    margin-right: 11px;
+    font-weight: 900;
+}
+
+.ichnite-marker-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    margin-right: 11px;
+    color: #f5a000;
+    font-size: 27px;
+    line-height: 1;
+    position: relative;
+    width: 1.05em;
+    height: 0.2em;
+    background: currentColor;
+    border-radius: 0 0.075em 0.075em 0;
+    transform: rotate(-45deg);
+}
+
+.ichnite-setting-card.is-off .ichnite-marker-icon {
+    color: #bdbdbd;
+}
+
+.ichnite-marker-icon::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 0.1em 0.15em;
+    border-right-color: currentColor;
+    border-left: 0;
+    position: absolute;
+    top: 0;
+    right: 100%;
+    bottom: 0;
+    margin: auto;
+}
+
+.ichnite-marker-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 0.15em;
+    border-left: 0.05em solid #fff;
+    box-sizing: content-box;
+}
+
+.ichnite-popup-icon {
+    width: 31px;
+    height: 27px;
+    border: 2px solid #f5a000;
+    border-radius: 45%;
+    color: #f5a000;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.ichnite-setting-card.is-off .ichnite-popup-icon {
+    border-color: #c7c7c7;
+    color: #c7c7c7;
+}
+
+.ichnite-book-icon {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    margin-right: 11px;
+    color: #f5a000;
+    font-size: initial;
+    font-weight: normal;
+}
+
+/* 記録帳：左右のページと中央の綴じ目を CSS だけで描画する */
+.ichnite-book-icon::before {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 2px;
+    width: 17px;
+    height: 29px;
+    border: 2px solid currentColor;
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    transform: skewY(8deg);
+    transform-origin: right center;
+    box-sizing: border-box;
+}
+
+.ichnite-book-icon::after {
+    content: "";
+    position: absolute;
+    right: 1px;
+    top: 2px;
+    width: 17px;
+    height: 29px;
+    border: 2px solid currentColor;
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    transform: skewY(-8deg);
+    transform-origin: left center;
+    box-sizing: border-box;
+}
+
+.ichnite-book-icon > span {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    top: 4px;
+    width: 2px;
+    height: 25px;
+    background: currentColor;
+    border-radius: 0;
+    transform: translateX(-50%);
+}
+
+.ichnite-setting-copy {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ichnite-setting-copy strong {
+    font-size: 13px;
+}
+
+.ichnite-setting-copy small {
+    color: #858585;
+    font-size: 11px;
+}
+
+.ichnite-setting-toggle {
+    position: relative;
+    width: 37px;
+    height: 21px;
+    flex: 0 0 auto;
+    border-radius: 99px;
+    background: #d0d0d0;
+}
+
+.ichnite-setting-toggle span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s;
+}
+
+.ichnite-setting-toggle.is-on {
+    background: #ff9f00;
+}
+
+.ichnite-setting-toggle.is-on span {
+    transform: translateX(16px);
+}
+
+.ichnite-records-arrow {
+    position: relative;
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ff9f00;
+    color: #ffffff;
+    font-size: 0;
+}
+
+.ichnite-records-arrow::before,
+.ichnite-records-arrow::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 2px;
+    background-color: #fff;
+    right: 8px;
+    border-radius: 2px;
+    left: 40%;
+}
+
+.ichnite-records-arrow::before {
+    top: 12px;
+    transform: rotate(45deg);
+}
+
+.ichnite-records-arrow::after {
+    top: 18px;
+    transform: rotate(-45deg);
 }
 
 #closePanel {
@@ -306,6 +500,34 @@
     line-height: 1.6;
 }
 
+#ichnite-panel-content {
+    scrollbar-color: #d4d4d4 transparent;
+    scrollbar-width: thin;
+}
+
+#ichnite-panel-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#ichnite-panel-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#ichnite-panel-content::-webkit-scrollbar-thumb {
+    background: #d4d4d4;
+    border-radius: 999px;
+}
+
+#ichnite-panel-content::-webkit-scrollbar-thumb:hover {
+    background: #c4c4c4;
+}
+
+#ichnite-panel-content::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 
 /* 絞り込みバー */
 #ichnite-filter-bar {
@@ -318,29 +540,7 @@
     color: var(--ichnite-text-muted);
 }
 
-#filterCurrentPageBtn {
-    border: 1px solid var(--ichnite-border);
-    border-radius: 999px;
-    background: #ffffff;
-    color: var(--ichnite-text-muted);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 12px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
-}
-
-#filterCurrentPageBtn:hover {
-    border-color: var(--ichnite-primary);
-}
-
-#filterCurrentPageBtn.is-active {
-    background: var(--ichnite-primary);
-    border-color: var(--ichnite-primary);
-    color: #ffffff;
-}
-
+#filterCurrentPageSelect,
 #panelSortSelect {
     flex: 1;
     min-width: 0;
@@ -353,9 +553,19 @@
     cursor: pointer;
 }
 
+#filterCurrentPageSelect:hover,
+#panelSortSelect:hover {
+    border-color: var(--ichnite-primary);
+}
+
+#filterCurrentPageSelect:focus,
 #panelSortSelect:focus {
     outline: none;
     border-color: var(--ichnite-primary);
+}
+
+#filterCurrentPageSelect {
+    flex: 0 1 auto;
 }
 
 
@@ -381,6 +591,7 @@
 .ichnite-dict-item {
     background: #ffffff;
     border: 1px solid var(--ichnite-border);
+    border-top: 4px solid var(--ichnite-primary);
     border-radius: 12px;
     padding: 10px 12px;
 
@@ -433,6 +644,26 @@
 .ichnite-color-dot.blue   { background: #2196f3; }
 .ichnite-color-dot.red    { background: #f44336; }
 .ichnite-color-dot.purple { background: #9c27b0; }
+
+.ichnite-dict-item.yellow {
+    border-top-color: #f4c430;
+}
+
+.ichnite-dict-item.green {
+    border-top-color: #4caf50;
+}
+
+.ichnite-dict-item.blue {
+    border-top-color: #2196f3;
+}
+
+.ichnite-dict-item.red {
+    border-top-color: #f44336;
+}
+
+.ichnite-dict-item.purple {
+    border-top-color: #9c27b0;
+}
 
 .ichnite-dict-memo {
     font-size: 12.5px;
@@ -533,6 +764,36 @@
 .ichnite-dict-memo-btn:hover,
 .ichnite-dict-delete:hover {
     background: var(--ichnite-primary-soft-hover);
+}
+
+.ichnite-dict-item.yellow .ichnite-dict-memo-btn,
+.ichnite-dict-item.yellow .ichnite-dict-memo {
+    background: rgba(244, 196, 48, 0.18);
+    color: #9a7200;
+}
+
+.ichnite-dict-item.green .ichnite-dict-memo-btn,
+.ichnite-dict-item.green .ichnite-dict-memo {
+    background: rgba(76, 175, 80, 0.15);
+    color: #28752c;
+}
+
+.ichnite-dict-item.blue .ichnite-dict-memo-btn,
+.ichnite-dict-item.blue .ichnite-dict-memo {
+    background: rgba(33, 150, 243, 0.14);
+    color: #1769aa;
+}
+
+.ichnite-dict-item.red .ichnite-dict-memo-btn,
+.ichnite-dict-item.red .ichnite-dict-memo {
+    background: rgba(244, 67, 54, 0.14);
+    color: #b52b20;
+}
+
+.ichnite-dict-item.purple .ichnite-dict-memo-btn,
+.ichnite-dict-item.purple .ichnite-dict-memo {
+    background: rgba(156, 39, 176, 0.14);
+    color: #7b1fa2;
 }
 
 

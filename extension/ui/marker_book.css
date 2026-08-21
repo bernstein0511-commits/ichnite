@@ -24,11 +24,12 @@ body {
 
 /* ===== Header ===== */
 .header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 20px;
-  padding-bottom: 16px;
+  padding-bottom: 50px;
   gap: 16px;
   border-bottom: 2px solid rgba(251, 182, 29, 0.35);
 }
@@ -58,6 +59,20 @@ body {
   font-size: 13px;
   color: #6b7280;
   line-height: 1.5;
+}
+
+.header-description {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-description .filter-search {
+  margin-left: auto;
 }
 
 .header-actions {
@@ -157,7 +172,6 @@ body {
 }
 
 .filter-search {
-  margin-left: auto;
   position: relative;
   display: flex;
   align-items: center;
@@ -465,6 +479,7 @@ td {
 
 /* ===== Stats (学習の可視化) ===== */
 .stats-section {
+  display: none;
   margin-bottom: 20px;
 }
 
@@ -650,7 +665,7 @@ td {
 /* ===== Memo cell ===== */
 .memo-desc {
   font-size: 13px;
-  color: #374151;
+  color: #000;
   line-height: 1.6;
   margin-bottom: 5px;
   white-space: pre-wrap;
@@ -666,7 +681,7 @@ td {
 
 .memo-note {
   font-size: 12px;
-  color: #9ca3af;
+  color: #000;
   display: flex;
   align-items: flex-start;
   gap: 4px;
