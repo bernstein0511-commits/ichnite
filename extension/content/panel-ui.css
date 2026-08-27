@@ -143,7 +143,7 @@
     right: 20px;
 
     width: 320px;
-    height: 80vh;
+    height: calc(100vh - 80px);
 
     background: #ffffff;
 
@@ -177,7 +177,7 @@
 
     color: #333333;
 
-    cursor: grab;
+    cursor: default;
 }
 
 /* 1段目：タイトルと閉じるボタン */
@@ -193,6 +193,7 @@
     padding: 14px 16px 12px 20px;
     background: var(--ichnite-primary);
     color: #ffffff;
+    cursor: grab;
 }
 
 .ichnite-panel-title {
@@ -213,6 +214,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(251, 182, 29, 0.35);
 }
 
 #ichnite-panel-header-actions h2 {
@@ -491,38 +494,38 @@
     display: flex;
     flex-direction: column;
 
-    padding: 16px 20px 20px;
+    padding: 3px 20px 20px;
 
-    overflow-y: auto;
+    overflow: hidden;
 
     color: var(--ichnite-text);
 
     line-height: 1.6;
 }
 
-#ichnite-panel-content {
+#ichnite-marker-list {
     scrollbar-color: #d4d4d4 transparent;
     scrollbar-width: thin;
 }
 
-#ichnite-panel-content::-webkit-scrollbar {
+#ichnite-marker-list::-webkit-scrollbar {
     width: 8px;
 }
 
-#ichnite-panel-content::-webkit-scrollbar-track {
+#ichnite-marker-list::-webkit-scrollbar-track {
     background: transparent;
 }
 
-#ichnite-panel-content::-webkit-scrollbar-thumb {
+#ichnite-marker-list::-webkit-scrollbar-thumb {
     background: #d4d4d4;
     border-radius: 999px;
 }
 
-#ichnite-panel-content::-webkit-scrollbar-thumb:hover {
+#ichnite-marker-list::-webkit-scrollbar-thumb:hover {
     background: #c4c4c4;
 }
 
-#ichnite-panel-content::-webkit-scrollbar-button {
+#ichnite-marker-list::-webkit-scrollbar-button {
     display: none;
     width: 0;
     height: 0;
@@ -531,10 +534,12 @@
 
 /* 絞り込みバー */
 #ichnite-filter-bar {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 6px;
+    padding-top: 0;
     padding-bottom: 12px;
     font-size: 13px;
     color: var(--ichnite-text-muted);
@@ -582,6 +587,8 @@
     list-style: none;
     margin: 0;
     padding: 0;
+    min-height: 0;
+    overflow-y: auto;
 
     display: flex;
     flex-direction: column;

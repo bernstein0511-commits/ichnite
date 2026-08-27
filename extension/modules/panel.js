@@ -268,16 +268,23 @@ function createSidePanel() {
   });
 
   // サイドパネル自体のドラッグ移動（フローティングボタンと同じ仕組み）。
-  // ヘッダーのボタン（閉じる／マーカー切替等）の上から始めた場合はドラッグにせず、通常のクリックとして扱う。
-  const panelHeader = root.getElementById("ichnite-panel-header");
+  // ドラッグ開始はタイトル帯だけに限定し、閉じるボタンは通常のクリックとして扱う。
+  const panelHeaderTop = root.getElementById("ichnite-panel-header-top");
   let isPanelDragging = false;
   let panelOffsetX = 0, panelOffsetY = 0;
 
-  panelHeader.addEventListener("mousedown", (event) => {
+  panelHeaderTop.addEventListener("mousedown", (event) => {
+    if (event.currentTarget !== panelHeaderTop) return;
     if (event.target.closest("button")) return;
     isPanelDragging = true;
     panelOffsetX = event.clientX - panel.offsetLeft;
     panelOffsetY = event.clientY - panel.offsetTop;
+  });
+
+  panel.addEventListener("mousedown", (event) => {
+    if (!event.target.closest("#ichnite-panel-header-top")) {
+      isPanelDragging = false;
+    }
   });
 
   document.addEventListener("mousemove", (event) => {
