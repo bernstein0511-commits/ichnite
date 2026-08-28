@@ -195,7 +195,7 @@ function createRow(m) {
     </td>
     <td class="cell-memo">
       ${m.memo ? `<a class="memo-detail-link" href="marker_detail.html?id=${encodeURIComponent(m.id)}"><div class="memo-note">${escapeHtml(m.memo)}</div></a>` : ""}
-      <a class="memo-detail-link" href="marker_detail.html?id=${encodeURIComponent(m.id)}"><div class="memo-desc${m.explanation ? "" : " empty"}">${explanationHtml}</div></a>
+      <a class="memo-detail-link" href="marker_detail.html?id=${encodeURIComponent(m.id)}"><div class="memo-desc${m.explanation ? "" : " empty"}"><strong class="memo-desc-label">解説</strong><span class="memo-desc-text">${explanationHtml}</span></div></a>
     </td>
     <td class="cell-source">
       <a class="source-link" href="${escapeHtml(m.pageUrl)}" target="_blank" rel="noopener">${escapeHtml(m.pageTitle)}</a>

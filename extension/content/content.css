@@ -16,23 +16,23 @@
    サイト自身の要素（ボタン・タグ等）の見た目まで上書きしてしまう事故になる。 */
 .ichnite-highlight.yellow {
     background:
-        rgba(255, 235, 59, 0.6);
+        rgba(255, 235, 59, 0.6) !important;
 }
 .ichnite-highlight.green {
     background:
-        rgba(76, 175, 80, 0.4);
+        rgba(76, 175, 80, 0.4) !important;
 }
 .ichnite-highlight.blue {
     background:
-        rgba(33, 150, 243, 0.3);
+        rgba(33, 150, 243, 0.3) !important;
 }
 .ichnite-highlight.red {
     background:
-        rgba(244, 67, 54, 0.3);
+        rgba(244, 67, 54, 0.3) !important;
 }
 .ichnite-highlight.purple {
     background:
-        rgba(156, 39, 176, 0.3);
+        rgba(156, 39, 176, 0.3) !important;
 }
 
 /* サイドパネルの「マーカー表示」ボタンでページ上のマーカーを一時的に隠す */

@@ -679,8 +679,19 @@ td {
   line-height: 1.6;
   margin-bottom: 5px;
   white-space: pre-wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px;
+}
+
+.memo-desc-label {
+  color: #a36b00;
+  white-space: nowrap;
+}
+
+.memo-desc-text {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -693,19 +704,12 @@ td {
   font-size: 12px;
   color: #000;
   margin-bottom: 1em;
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
   line-height: 1.5;
   white-space: pre-wrap;
-}
-
-.memo-note::before {
-  content: '□';
-  font-size: 11px;
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: #d1d5db;
+  display: -webkit-box;
+  -webkit-line-clamp: 10;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ===== Source cell ===== */

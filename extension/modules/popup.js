@@ -112,10 +112,12 @@ function clampPopupToViewport(popup) {
 }
 
 
-// メモの表示＋「編集/追加」「削除」ボタン
-function renderMemoPopupView(popup, target) {
+// メモまたはAI解説の表示＋操作ボタン
+function renderMemoPopupView(popup, target, showAi = false) {
   const memo = target.dataset.memo || "";
   const hasMemo = memo.trim() !== "";
+  const aiNote = readAiNote(target);
+  const hasAiNote = !!aiNote;
 
   // 同じページ・同じ単語・同じ色のハイライトが複数あるときだけ、登場順の番号を出す
   const dupIndex = target.dataset.dupIndex;
@@ -125,18 +127,34 @@ function renderMemoPopupView(popup, target) {
 
   popup.innerHTML = `
     ${dupHtml}
-    ${hasMemo
-      ? `<div class="ichnite-memo-text">${escapeIchniteHtml(memo)}</div>`
-      : `<div class="ichnite-memo-empty">メモなし</div>`
+    ${showAi && hasAiNote
+      ? renderAiNote(aiNote)
+      : hasMemo
+        ? `<div class="ichnite-memo-text">${escapeIchniteHtml(memo)}</div>`
+        : `<div class="ichnite-memo-empty">メモなし</div>`
     }
     <div class="ichnite-memo-popup-actions">
-      <button id="editMemo">${hasMemo ? "メモを編集" : "メモを追加"}</button>
+      <button id="toggleAi">${showAi ? "メモ" : "AI生成"}</button>
+      <button id="editMemo">${showAi ? "再生成" : hasMemo ? "メモを編集" : "メモを追加"}</button>
       <button id="deleteMemo">削除</button>
     </div>
   `;
 
+  popup.querySelector("#toggleAi").onclick = async () => {
+    if (readAiNote(target)) {
+      renderMemoPopupView(popup, target, !showAi);
+      clampPopupToViewport(popup);
+      return;
+    }
+    await generateMemoPopupAiNote(popup, target);
+  };
+
   popup.querySelector("#editMemo").onclick = () => {
-    renderMemoPopupEdit(popup, target);
+    if (showAi) {
+      generateMemoPopupAiNote(popup, target);
+    } else {
+      renderMemoPopupEdit(popup, target);
+    }
   };
 
   popup.querySelector("#deleteMemo").onclick = async () => {
@@ -149,6 +167,50 @@ function renderMemoPopupView(popup, target) {
 
     removeMemoPopup();
   };
+}
+
+
+function readAiNote(target) {
+  if (!target.dataset.aiNote) return null;
+  try {
+    return JSON.parse(target.dataset.aiNote);
+  } catch {
+    return null;
+  }
+}
+
+
+function renderAiNote(aiNote) {
+  const fields = [
+    ["解説", aiNote.explanation],
+    ["類似語", aiNote.similar_words],
+    ["対義語", aiNote.antonyms],
+    ["日本語訳", aiNote.translation],
+    ["例文", aiNote.usage_example],
+  ].filter(([, value]) => value);
+
+  return `<div class="ichnite-ai-note">${fields.map(([label, value]) =>
+    `<div class="ichnite-ai-note-row"><strong>${label}</strong><span>${escapeIchniteHtml(value)}</span></div>`
+  ).join("")}</div>`;
+}
+
+
+async function generateMemoPopupAiNote(popup, target) {
+  const buttons = popup.querySelectorAll("button");
+  buttons.forEach(button => { button.disabled = true; });
+
+  try {
+    const aiNote = await generateAiNote(target.dataset.markerId, target.textContent);
+    target.dataset.aiNote = JSON.stringify(aiNote);
+    target.dataset.aiLoaded = "true";
+    notifyMarkersUpdated();
+    renderMemoPopupView(popup, target, true);
+    clampPopupToViewport(popup);
+  } catch (error) {
+    console.log("AI解説生成失敗:", error.message);
+    alert(`AI解説の生成に失敗しました。\n${error.message}`);
+    buttons.forEach(button => { button.disabled = false; });
+  }
 }
 
 

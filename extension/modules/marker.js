@@ -83,7 +83,11 @@ async function addMarker(event) {
   markerEl.dataset.memo = "";
 
   try {
-    currentSelection.surroundContents(markerEl);
+    // リンクなどの要素をまたぐ選択ではsurroundContents()が失敗するため、
+    // 選択内容を取り出してハイライト要素に入れた状態で元の位置へ戻す。
+    const selectedFragment = currentSelection.extractContents();
+    markerEl.appendChild(selectedFragment);
+    currentSelection.insertNode(markerEl);
     window.getSelection().removeAllRanges();
   } catch (error) {
     console.log("マーカーDOM失敗:", error);

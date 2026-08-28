@@ -387,6 +387,7 @@ function createMarkerListItem(marker, dup) {
     </div>
     <div class="ichnite-dict-memo-area"></div>
     <div class="ichnite-dict-actions">
+      <button class="ichnite-dict-ai-btn">AI生成</button>
       <button class="ichnite-dict-memo-btn"></button>
       <button class="ichnite-dict-delete">削除</button>
     </div>
@@ -394,7 +395,8 @@ function createMarkerListItem(marker, dup) {
 
   const memoArea = li.querySelector(".ichnite-dict-memo-area");
   const memoBtn = li.querySelector(".ichnite-dict-memo-btn");
-  renderPanelMemoView(memoArea, memoBtn, marker);
+  const aiBtn = li.querySelector(".ichnite-dict-ai-btn");
+  renderPanelMemoView(memoArea, memoBtn, aiBtn, marker);
 
   // 登録文字クリックで該当位置へ遷移
   li.querySelector(".ichnite-dict-word").addEventListener("click", () => {
@@ -403,7 +405,23 @@ function createMarkerListItem(marker, dup) {
 
   // メモの追加・編集（テーマに合わせたインライン編集。prompt()は使わない）
   memoBtn.addEventListener("click", () => {
-    renderPanelMemoEdit(memoArea, memoBtn, marker);
+    if (memoBtn.textContent === "再生成") {
+      generatePanelAiNote(memoArea, memoBtn, aiBtn, marker);
+    } else {
+      renderPanelMemoEdit(memoArea, memoBtn, aiBtn, marker);
+    }
+  });
+
+  aiBtn.addEventListener("click", () => {
+    if (aiBtn.textContent === "メモ") {
+      renderPanelMemoView(memoArea, memoBtn, aiBtn, marker);
+      return;
+    }
+    if (marker.explanation) {
+      renderPanelAiView(memoArea, memoBtn, aiBtn, marker);
+      return;
+    }
+    generatePanelAiNote(memoArea, memoBtn, aiBtn, marker);
   });
 
   // 削除ボタン（ページ上のハイライトも合わせて除去する）
@@ -420,14 +438,63 @@ function createMarkerListItem(marker, dup) {
   return li;
 }
 
-function renderPanelMemoView(memoArea, memoBtn, marker) {
+function renderPanelMemoView(memoArea, memoBtn, aiBtn, marker) {
+  const detailUrl = chrome.runtime.getURL(`ui/marker_detail.html?id=${encodeURIComponent(marker.marker_id)}`);
   memoArea.innerHTML = marker.memo
-    ? `<div class="ichnite-dict-memo">${escapeIchniteHtml(marker.memo)}</div>`
+    ? `<a class="ichnite-dict-detail-link" href="${detailUrl}" target="_blank" rel="noopener"><div class="ichnite-dict-memo">${escapeIchniteHtml(marker.memo)}</div></a>`
     : "";
+  bindPanelDetailLink(memoArea);
   memoBtn.textContent = marker.memo ? "メモを編集" : "メモを追加";
+  aiBtn.disabled = false;
+  aiBtn.textContent = "AI生成";
 }
 
-function renderPanelMemoEdit(memoArea, memoBtn, marker) {
+function renderPanelAiView(memoArea, memoBtn, aiBtn, marker) {
+  const detailUrl = chrome.runtime.getURL(`ui/marker_detail.html?id=${encodeURIComponent(marker.marker_id)}`);
+  const aiFields = [
+    ["解説", marker.explanation],
+    ["類似語", marker.similar_words],
+    ["対義語", marker.antonyms],
+    ["訳", marker.translation],
+    ["例文", marker.usage_example],
+  ].filter(([, value]) => value);
+
+  memoArea.innerHTML = `<a class="ichnite-dict-detail-link" href="${detailUrl}" target="_blank" rel="noopener"><div class="ichnite-dict-ai">${aiFields.map(([label, value]) =>
+    `<div><strong>${label}</strong><span>${escapeIchniteHtml(value)}</span></div>`
+  ).join("")}</div></a>`;
+  bindPanelDetailLink(memoArea);
+  memoBtn.textContent = "再生成";
+  aiBtn.disabled = false;
+  aiBtn.textContent = "メモ";
+}
+
+function bindPanelDetailLink(memoArea) {
+  const detailLink = memoArea.querySelector(".ichnite-dict-detail-link");
+  detailLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    chrome.runtime.sendMessage({ type: "ichnite:open-tab", url: detailLink.href });
+  });
+}
+
+async function generatePanelAiNote(memoArea, memoBtn, aiBtn, marker) {
+  aiBtn.disabled = true;
+  memoBtn.disabled = true;
+  aiBtn.textContent = "生成中...";
+  try {
+    const aiNote = await generateAiNote(marker.marker_id, marker.selected_text);
+    Object.assign(marker, aiNote);
+    notifyMarkersUpdated();
+    renderPanelAiView(memoArea, memoBtn, aiBtn, marker);
+  } catch (error) {
+    console.log("AI解説生成失敗:", error.message);
+    alert(`AI解説の生成に失敗しました。\n${error.message}`);
+    aiBtn.disabled = false;
+    memoBtn.disabled = false;
+    aiBtn.textContent = "AI生成";
+  }
+}
+
+function renderPanelMemoEdit(memoArea, memoBtn, aiBtn, marker) {
   memoArea.innerHTML = `
     <textarea class="ichnite-dict-memo-textarea" placeholder="気づいたことや覚えておきたいことをメモしましょう">${escapeIchniteHtml(marker.memo || "")}</textarea>
     <div class="ichnite-dict-memo-edit-actions">
@@ -440,7 +507,7 @@ function renderPanelMemoEdit(memoArea, memoBtn, marker) {
   textarea.focus();
 
   memoArea.querySelector(".ichnite-dict-memo-cancel").addEventListener("click", () => {
-    renderPanelMemoView(memoArea, memoBtn, marker);
+    renderPanelMemoView(memoArea, memoBtn, aiBtn, marker);
   });
 
   memoArea.querySelector(".ichnite-dict-memo-save").addEventListener("click", async () => {
@@ -452,7 +519,7 @@ function renderPanelMemoEdit(memoArea, memoBtn, marker) {
     try {
       await saveMarkerMemo(marker.marker_id, newMemo);
       marker.memo = newMemo;
-      renderPanelMemoView(memoArea, memoBtn, marker);
+      renderPanelMemoView(memoArea, memoBtn, aiBtn, marker);
       notifyMarkersUpdated();
     } catch (error) {
       console.log("メモ保存失敗:", error.message);

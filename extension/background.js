@@ -15,12 +15,17 @@ importScripts("modules/dataStore.js", "modules/aiService.js");
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "ichnite:open-marker-book") {
-    openOrFocusMarkerBook();
+    openOrFocusMarkerBook(sender.tab);
     return;
   }
 
   if (message?.type === "ichnite:open-tab") {
-    chrome.tabs.create({ url: message.url });
+    const createOptions = { url: message.url };
+    if (sender.tab?.id !== undefined && sender.tab.windowId !== undefined) {
+      createOptions.windowId = sender.tab.windowId;
+      createOptions.index = sender.tab.index + 1;
+    }
+    chrome.tabs.create(createOptions);
     return;
   }
 
@@ -85,7 +90,7 @@ async function relayToOtherTabs(message, sourceTabId) {
 
 
 // 記録帳ページが既に開いていればそのタブへ切り替え、なければ新規タブで開く
-async function openOrFocusMarkerBook() {
+async function openOrFocusMarkerBook(sourceTab) {
   const url = chrome.runtime.getURL("ui/marker_book.html");
   const tabs = await chrome.tabs.query({ url: `${url}*` });
 
@@ -93,6 +98,11 @@ async function openOrFocusMarkerBook() {
     await chrome.tabs.update(tabs[0].id, { active: true });
     await chrome.windows.update(tabs[0].windowId, { focused: true });
   } else {
-    await chrome.tabs.create({ url });
+    const createOptions = { url };
+    if (sourceTab?.id !== undefined && sourceTab.windowId !== undefined) {
+      createOptions.windowId = sourceTab.windowId;
+      createOptions.index = sourceTab.index + 1;
+    }
+    await chrome.tabs.create(createOptions);
   }
 }

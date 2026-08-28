@@ -81,6 +81,29 @@
     color: var(--ichnite-text-muted);
 }
 
+.ichnite-ai-note {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    line-height: 1.5;
+}
+
+.ichnite-ai-note-row {
+    display: flex;
+    gap: 6px;
+}
+
+.ichnite-ai-note-row strong {
+    flex: 0 0 auto;
+    color: var(--ichnite-text-muted);
+    font-size: 11px;
+}
+
+.ichnite-ai-note-row span {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 #ichnite-memo-popup textarea {
     display: block;
     width: 100%;
@@ -684,9 +707,52 @@
 
     /* 長いメモで枠が伸びすぎないよう、一定行数で省略する */
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.ichnite-dict-detail-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ichnite-dict-detail-link:hover {
+    text-decoration: underline;
+}
+
+.ichnite-dict-ai {
+    font-size: 12.5px;
+    color: var(--ichnite-text);
+    background: var(--ichnite-primary-soft);
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 7.5em;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.ichnite-dict-ai > div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px;
+    align-items: start;
+}
+
+.ichnite-dict-ai strong {
+    flex: 0 0 auto;
+    color: inherit;
+    font-size: inherit;
+}
+
+.ichnite-dict-ai span {
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .ichnite-dict-memo-textarea {
@@ -756,6 +822,7 @@
 }
 
 .ichnite-dict-memo-btn,
+.ichnite-dict-ai-btn,
 .ichnite-dict-delete {
     border: none;
     border-radius: 999px;
@@ -769,36 +836,42 @@
 }
 
 .ichnite-dict-memo-btn:hover,
+.ichnite-dict-ai-btn:hover,
 .ichnite-dict-delete:hover {
     background: var(--ichnite-primary-soft-hover);
 }
 
 .ichnite-dict-item.yellow .ichnite-dict-memo-btn,
-.ichnite-dict-item.yellow .ichnite-dict-memo {
+.ichnite-dict-item.yellow .ichnite-dict-memo,
+.ichnite-dict-item.yellow .ichnite-dict-ai {
     background: rgba(244, 196, 48, 0.18);
     color: #9a7200;
 }
 
 .ichnite-dict-item.green .ichnite-dict-memo-btn,
-.ichnite-dict-item.green .ichnite-dict-memo {
+.ichnite-dict-item.green .ichnite-dict-memo,
+.ichnite-dict-item.green .ichnite-dict-ai {
     background: rgba(76, 175, 80, 0.15);
     color: #28752c;
 }
 
 .ichnite-dict-item.blue .ichnite-dict-memo-btn,
-.ichnite-dict-item.blue .ichnite-dict-memo {
+.ichnite-dict-item.blue .ichnite-dict-memo,
+.ichnite-dict-item.blue .ichnite-dict-ai {
     background: rgba(33, 150, 243, 0.14);
     color: #1769aa;
 }
 
 .ichnite-dict-item.red .ichnite-dict-memo-btn,
-.ichnite-dict-item.red .ichnite-dict-memo {
+.ichnite-dict-item.red .ichnite-dict-memo,
+.ichnite-dict-item.red .ichnite-dict-ai {
     background: rgba(244, 67, 54, 0.14);
     color: #b52b20;
 }
 
 .ichnite-dict-item.purple .ichnite-dict-memo-btn,
-.ichnite-dict-item.purple .ichnite-dict-memo {
+.ichnite-dict-item.purple .ichnite-dict-memo,
+.ichnite-dict-item.purple .ichnite-dict-ai {
     background: rgba(156, 39, 176, 0.14);
     color: #7b1fa2;
 }
