@@ -134,7 +134,7 @@ function renderMemoPopupView(popup, target, showAi = false) {
         : `<div class="ichnite-memo-empty">メモなし</div>`
     }
     <div class="ichnite-memo-popup-actions">
-      <button id="toggleAi">${showAi ? "メモ" : "AI生成"}</button>
+      <button id="toggleAi">${showAi ? "メモ" : "AI解説"}</button>
       <button id="editMemo">${showAi ? "再生成" : hasMemo ? "メモを編集" : "メモを追加"}</button>
       <button id="deleteMemo">削除</button>
     </div>

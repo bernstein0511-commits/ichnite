@@ -387,7 +387,7 @@ function createMarkerListItem(marker, dup) {
     </div>
     <div class="ichnite-dict-memo-area"></div>
     <div class="ichnite-dict-actions">
-      <button class="ichnite-dict-ai-btn">AI生成</button>
+      <button class="ichnite-dict-ai-btn">AI解説</button>
       <button class="ichnite-dict-memo-btn"></button>
       <button class="ichnite-dict-delete">削除</button>
     </div>
@@ -446,7 +446,7 @@ function renderPanelMemoView(memoArea, memoBtn, aiBtn, marker) {
   bindPanelDetailLink(memoArea);
   memoBtn.textContent = marker.memo ? "メモを編集" : "メモを追加";
   aiBtn.disabled = false;
-  aiBtn.textContent = "AI生成";
+  aiBtn.textContent = "AI解説";
 }
 
 function renderPanelAiView(memoArea, memoBtn, aiBtn, marker) {
@@ -490,7 +490,7 @@ async function generatePanelAiNote(memoArea, memoBtn, aiBtn, marker) {
     alert(`AI解説の生成に失敗しました。\n${error.message}`);
     aiBtn.disabled = false;
     memoBtn.disabled = false;
-    aiBtn.textContent = "AI生成";
+    aiBtn.textContent = "AI解説";
   }
 }
 
